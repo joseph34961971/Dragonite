@@ -15,13 +15,24 @@
 import copy
 import torch
 import torch.nn.functional as F
+import numpy as np 
+from PIL import Image
+import clip
+import torchvision
+from utils.augmentations import ImageAugmentations
+from torchvision import transforms
+import os
 
 
-def point_tracking(F0,
+### Fron CLIPDrag
+def fast_point_tracking(F0,
                    F1,
                    handle_points,
                    handle_points_init,
+                   target_points,
                    args):
+    print("Running fast_point_tracking")
+    # point tracking a: consider distance to target.
     with torch.no_grad():
         _, _, max_r, max_c = F0.shape
         for i in range(len(handle_points)):
@@ -30,14 +41,28 @@ def point_tracking(F0,
 
             r1, r2 = max(0,int(pi[0])-args.r_p), min(max_r,int(pi[0])+args.r_p+1)
             c1, c2 = max(0,int(pi[1])-args.r_p), min(max_c,int(pi[1])+args.r_p+1)
+  
             F1_neighbor = F1[:, :, r1:r2, c1:c2]
             all_dist = (f0.unsqueeze(dim=-1).unsqueeze(dim=-1) - F1_neighbor).abs().sum(dim=1)
             all_dist = all_dist.squeeze(dim=0)
+            ################################################################
+            x,y  = torch.range(r1,r2-1),torch.range(c1,c2-1)
+            xx,yy = torch.meshgrid(x,y)
+            points = torch.stack([xx.flatten(),yy.flatten()],dim=1)
+            point_dist = torch.sum((points-target_points[i])**2,dim=1).reshape(r2-r1,c2-c1)
+            threshold = torch.sum((handle_points[i]-target_points[i])**2)
+            all_dist[point_dist>=threshold] = float('inf')
+            if threshold <=1:
+                all_dist[args.r_p,args.r_p] = threshold 
+            ################################################################
             row, col = divmod(all_dist.argmin().item(), all_dist.shape[-1])
             # handle_points[i][0] = pi[0] - args.r_p + row
             # handle_points[i][1] = pi[1] - args.r_p + col
             handle_points[i][0] = r1 + row
             handle_points[i][1] = c1 + col
+            dist = torch.sum((handle_points[i]-target_points[i])**2)
+            print(f'{i}-th point pairs: handle_point:{handle_points[i]},target_point:{target_points[i]},dist:{dist}')
+
         return handle_points
 
 def check_handle_reach_target(handle_points,
@@ -72,6 +97,8 @@ def interpolate_feature_patch(feat,
 
     return Ia * wa + Ib * wb + Ic * wc + Id * wd
 
+
+### Fron CLIPDrag
 def drag_diffusion_update(model,
                           init_code,
                           text_embeddings,
@@ -81,16 +108,23 @@ def drag_diffusion_update(model,
                           mask,
                           args,
                           use_kv_copy=1):
+    
+    print('running drag_diffusion_update')
 
     assert len(handle_points) == len(target_points), \
         "number of handle point must equals target points"
     if text_embeddings is None:
         text_embeddings = model.get_text_embeddings(args.prompt)
-
+    for param in model.unet.parameters():
+        param.requires_grad = False
+    for param in model.vae.parameters():
+        param.requires_grad = False
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    clip_model = clip.load("ViT-B/16", device=device)[0].eval().requires_grad_(False)
     # the init output feature of unet
-    
     with torch.no_grad():
-        unet_output, F0 = model.forward_unet_features(init_code, t, encoder_hidden_states=text_embeddings,
+        unet_output, F0 = model.forward_unet_features(init_code, t,
+            encoder_hidden_states=text_embeddings,
             layer_idx=args.unet_feature_idx, interp_res_h=args.sup_res_h, interp_res_w=args.sup_res_w,
             use_kv_copy=use_kv_copy)
         x_prev_0,_ = model.step(unet_output, t, init_code)
@@ -104,18 +138,21 @@ def drag_diffusion_update(model,
     handle_points_init = copy.deepcopy(handle_points)
     interp_mask = F.interpolate(mask, (init_code.shape[2],init_code.shape[3]), mode='nearest')
     using_mask = interp_mask.sum() != 0.0
-
     # prepare amp scaler for mixed-precision training
     scaler = torch.cuda.amp.GradScaler()
     for step_idx in range(args.n_pix_step):
+        print(f'iteration index:{step_idx}')
         with torch.autocast(device_type='cuda', dtype=torch.float16):
-            unet_output, F1 = model.forward_unet_features(init_code, t, encoder_hidden_states=text_embeddings,
+            ###################################### drag guidance part ###################
+            unet_output, F1 = model.forward_unet_features(init_code, t,
+                encoder_hidden_states=text_embeddings,
                 layer_idx=args.unet_feature_idx, interp_res_h=args.sup_res_h, interp_res_w=args.sup_res_w)
             x_prev_updated,_ = model.step(unet_output, t, init_code)
 
             # do point tracking to update handle points before computing motion supervision loss
             if step_idx != 0:
-                handle_points = point_tracking(F0, F1, handle_points, handle_points_init, args)
+                handle_points = fast_point_tracking(F0, F1, handle_points, handle_points_init,target_points, args)
+                # handle_points = point_tracking(F0, F1, handle_points, handle_points_init, args)
                 print('new handle points', handle_points)
 
             # break if all handle points have reached the targets
@@ -130,32 +167,103 @@ def drag_diffusion_update(model,
                 if (ti - pi).norm() < 2.:
                     continue
 
-                di = (ti - pi) / (ti - pi).norm()
+                di = (ti - pi) / (ti - pi).norm() * min(4,(ti-pi).norm())
 
                 # motion supervision
                 # with boundary protection
                 r1, r2 = max(0,int(pi[0])-args.r_m), min(max_r,int(pi[0])+args.r_m+1)
                 c1, c2 = max(0,int(pi[1])-args.r_m), min(max_c,int(pi[1])+args.r_m+1)
-                f0_patch = F1[:,:,r1:r2, c1:c2].detach()
+                
+                # default setting in DragDiffusion
+                # f0_patch = F1[:,:,r1:r2, c1:c2].detach()
                 f1_patch = interpolate_feature_patch(F1,r1+di[0],r2+di[0],c1+di[1],c2+di[1])
 
+                pi = handle_points_init[i]
+                r1, r2 = max(0,int(pi[0])-args.r_m), min(max_r,int(pi[0])+args.r_m+1)
+                c1, c2 = max(0,int(pi[1])-args.r_m), min(max_c,int(pi[1])+args.r_m+1)
+                f0_patch = F0[:,:,r1:r2, c1:c2].detach()
                 # original code, without boundary protection
                 # f0_patch = F1[:,:,int(pi[0])-args.r_m:int(pi[0])+args.r_m+1, int(pi[1])-args.r_m:int(pi[1])+args.r_m+1].detach()
                 # f1_patch = interpolate_feature_patch(F1, pi[0] + di[0], pi[1] + di[1], args.r_m)
-                loss += ((2*args.r_m+1)**2)*F.l1_loss(f0_patch, f1_patch)
+                # import pdb;pdb.set_trace()
+                if f1_patch.shape != f0_patch.shape:
+                    loss += ((2*args.r_m+1)**2)*(f0_patch.mean()-f1_patch.mean())
+                else:
+                    loss += ((2*args.r_m+1)**2)*F.l1_loss(f0_patch, f1_patch)
 
             # masked region must stay unchanged
             if using_mask:
                 loss += args.lam * ((x_prev_updated-x_prev_0)*(1.0-interp_mask)).abs().sum()
             # loss += args.lam * ((init_code_orig-init_code)*(1.0-interp_mask)).abs().sum()
-            print('loss total=%f'%(loss.item()))
+            ######################################### clip guidance part ####################################
+            def cal_global_grad(init_code,args):
+                z = init_code.detach().requires_grad_(True)
+               
+                image_aug  = ImageAugmentations(224, 1).to(device)
+                unet_output= model.unet(z,
+                                    t,
+                                    encoder_hidden_states=text_embeddings,
+                                    return_intermediates=False
+                                    )
+                x_prev_0,pred_x0 = model.step(unet_output, t, z)
+                pred_image = 1 / 0.18215 * pred_x0.half()
+                pred_image = model.vae.decode(pred_image)['sample']
+                pred_image = (pred_image / 2 + 0.5).clamp(0, 1)
 
-        scaler.scale(loss).backward()
-        scaler.step(optimizer)
-        scaler.update()
+                clip_normalize = transforms.Normalize(
+                mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]
+                        )
+
+
+                aug_img = image_aug(pred_image).add(1).div(2)
+
+                clip_img = clip_normalize(aug_img)    
+                print(f'prompt for finetune is :{args.drag_prompt}')
+                lora_prompt = args.drag_prompt
+                lora_prompt = clip.tokenize(lora_prompt).to(device)
+                image_features = clip_model.encode_image(clip_img)
+                text_features = clip_model.encode_text(lora_prompt)
+                x = F.normalize(image_features,dim=-1)
+                y = F.normalize(text_features,dim=-1)
+                clip_loss = 1-(x@y.t()).squeeze()
+                clip_loss =args.clip_loss_coef*clip_loss
+                print(f'clip loss:{clip_loss}')
+                grad_global = torch.autograd.grad(clip_loss,z)[0]
+                del pred_image,clip_img,aug_img,image_features,text_features
+                # clip_loss.backward(retain_graph=True)
+                # grad_global = init_code.grad
+                # optimizer.zero_grad()
+                return grad_global
+            
+            if args.drag_prompt != "":
+                grad_global = cal_global_grad(init_code,args)
+
+            #################################################################################################
+                print('loss total=%f'%(loss.item()))
+                loss.backward()
+                grad_direction = init_code.grad
+                cosine = torch.cosine_similarity(grad_global.view(1,-1),grad_direction.view(1,-1))
+                sine = (1-cosine**2)**0.5
+                print(f'cosine between two gradients:{cosine}')
+                pro_lambda=args.fuse_cof 
+                print(f'prompt lambda for global local fuse:{pro_lambda}')
+                if cosine >=0:
+                    grad_prompt = grad_direction + pro_lambda*sine*grad_global
+                else:
+                    grad_prompt = grad_direction + pro_lambda*cosine*grad_global   
+            # grad_prompt = grad_direction + pro_lambda*cosine*grad_global   
+  
+                init_code.grad = grad_prompt
+
+        optimizer.step()
+
         optimizer.zero_grad()
 
     return init_code
+
+
+
+
 
 def drag_diffusion_update_gen(model,
                               init_code,
@@ -238,7 +346,7 @@ def drag_diffusion_update_gen(model,
 
             # do point tracking to update handle points before computing motion supervision loss
             if step_idx != 0:
-                handle_points = point_tracking(F0, F1, handle_points, handle_points_init, args)
+                handle_points = fast_point_tracking(F0, F1, handle_points, handle_points_init, args)
                 print('new handle points', handle_points)
 
             # break if all handle points have reached the targets

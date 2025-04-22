@@ -98,7 +98,7 @@ def override_forward(self):
         # `Timesteps` does not contain any weights and will always return f32 tensors
         # but time_embedding might actually be running in fp16. so we need to cast here.
         # there might be better ways to encapsulate this.
-        t_emb = t_emb.to(dtype=self.dtype)
+        t_emb = t_emb.to(dtype=self.dtype, device=sample.device)
 
         emb = self.time_embedding(t_emb, timestep_cond)
 
@@ -284,6 +284,7 @@ class DragPipeline(StableDiffusionPipeline):
             image = image.permute(2, 0, 1).unsqueeze(0).to(DEVICE)
         # input image density range [-1, 1]
         # print('image shape2 ', image.shape) # torch.Size([1, 3, 512, 512])
+        self.vae = self.vae.to(DEVICE)
         latents = self.vae.encode(image)['latent_dist'].mean
         latents = latents * 0.18215
         # print('latents shape ', latents.shape)  # torch.Size([1, 4, 64, 64])
@@ -318,6 +319,7 @@ class DragPipeline(StableDiffusionPipeline):
             max_length=77,
             return_tensors="pt"
         )
+        self.text_encoder.to(DEVICE)
         text_embeddings = self.text_encoder(text_input.input_ids.to(DEVICE))[0]
         return text_embeddings
 
@@ -454,6 +456,8 @@ class DragPipeline(StableDiffusionPipeline):
         latents = self.image2latent(image)
 
         # unconditional embedding for classifier free guidance
+        print(type(guidance_scale))
+        print(guidance_scale)
         if guidance_scale > 1.:
             max_length = text_input.input_ids.shape[-1]
             unconditional_input = self.tokenizer(
@@ -490,6 +494,8 @@ class DragPipeline(StableDiffusionPipeline):
                 model_inputs = torch.cat([latents] * 2)
             else:
                 model_inputs = latents
+            model_inputs = model_inputs.to(device=DEVICE, dtype=torch.float16)
+            self.unet = self.unet.to(DEVICE)
             noise_pred = self.unet(model_inputs, t, encoder_hidden_states=text_embeddings,iter_cur=len(self.scheduler.timesteps)-i-1, save_kv=save_kv) # change this for memory
             if guidance_scale > 1.:
                 noise_pred_uncon, noise_pred_con = noise_pred.chunk(2, dim=0)

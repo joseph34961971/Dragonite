@@ -56,8 +56,13 @@ if __name__ == '__main__':
     parser.add_argument('--inv_strength', type=float, default=0.7, help='inversion strength')
     parser.add_argument('--latent_lr', type=float, default=0.01, help='latent learning rate')
     parser.add_argument('--unet_feature_idx', type=int, default=3, help='feature idx of unet features')
-    parser.add_argument('--result_dir', type=str, default=None, help='feature idx of unet features')
+    parser.add_argument('--result_dir', type=str, default=None, help='result directory')
     parser.add_argument('--n_inference_step', type=int, default=10, help='feature idx of unet features')
+    parser.add_argument('--task_cat', type=str, default=None, help='task category')
+    parser.add_argument('--guidance_scale', type=float, default=1.0, help='guidance scale')
+    parser.add_argument('--clip_loss_coef', type=float, default=0.7, help='clip loss coefficient')
+    parser.add_argument('--fuse_coef', type=float, default=0.7, help='fuse coefficient')
+
     args = parser.parse_args()
 
     all_category = [
@@ -74,20 +79,25 @@ if __name__ == '__main__':
     ]
 
     # assume root_dir and lora_dir are valid directory
-    root_dir = 'path to DragBench'
-    lora_dir = 'path to drag_bench_lora'
+    root_dir = './drag_bench_data'
+    lora_dir = './drag_bench_lora'
     if args.result_dir == None:
-        result_dir = 'drag_diffusion_0506_inter_nolora_kvcopy_inverse10_' + \
+        result_dir = 'fast_clip_inter_nolora_kvcopy_inverse10' + \
             '_' + str(args.lora_steps) + \
             '_' + str(args.inv_strength) + \
             '_' + str(args.latent_lr) + \
-            '_' + str(args.unet_feature_idx)
+            '_' + str(args.unet_feature_idx) + \
+            '_' + str(args.clip_loss_coef) + \
+            '_' + str(args.fuse_coef)
     else:
         result_dir = args.result_dir+ \
             '_' + str(args.lora_steps) + \
             '_' + str(args.inv_strength) + \
             '_' + str(args.latent_lr) + \
-            '_' + str(args.unet_feature_idx)
+            '_' + str(args.unet_feature_idx) + \
+            '_' + str(args.clip_loss_coef) + \
+            '_' + str(args.fuse_coef)
+        
 
     # mkdir if necessary
     if not os.path.isdir(result_dir):
@@ -123,20 +133,25 @@ if __name__ == '__main__':
                                 image_with_clicks,
                                 mask,
                                 prompt,
+                                prompt,
                                 points,
                                 inversion_strength = args.inv_strength,
-                                model_path='path to stable-diffusion-v1-5',
+                                model_path='runwayml/stable-diffusion-v1-5',
                                 vae_path="default",
                                 lora_path=lora_path, # is not used 
                                 start_step=0,
                                 start_layer=10,
                                 n_inference_step=args.n_inference_step,
-                                task_cat="continuous drag",
+                                task_cat="fast clip",
                                 fill_mode='interpolation', 
+                                guidance_scale=args.guidance_scale,
+                                clip_loss_coef=args.clip_loss_coef,
+                                fuse_coef=args.fuse_coef,
                                 use_kv_cp="default",
                                 use_lora_ = "default",
                                 testif=1,
-                                save_dir="./results",)
+                                save_dir="./results",
+                                )
             end_time = time.time()
             save_time0 = time.time()
             save_dir = os.path.join(result_dir, cat, sample_name)
@@ -160,3 +175,5 @@ if __name__ == '__main__':
             f"use drag time per point: {(end_time-start_time-save_time_sum)/349}\n\n\n"
     with open("./run_drag_result.txt", 'a') as f:
         f.write(logg)
+
+    print(f"EVAL_ROOT={result_dir}")

@@ -8,6 +8,14 @@ import copy
 from tqdm import tqdm
 import numpy as np
 pdist = torch.nn.PairwiseDistance(p=2)
+import torch.nn.functional as F
+from utils.augmentations import ImageAugmentations
+import clip
+from torchvision import transforms
+import torchvision
+
+import matplotlib.pyplot as plt
+import numpy as np
 
 
 
@@ -122,8 +130,19 @@ def transform_point(point, shift_yx, scale_factor):
     return point_new
 
 
-def drag_stretch_multipoint_ratio_interp(invert_code,handle_points,target_points,mask_cp_handle,shift_yx=None,fill_mode='interpolation'):
-    print("Running drag_stretch_multipoint_ratio_interp")
+def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_points,target_points,mask_cp_handle,args,shift_yx=None,fill_mode='interpolation'):
+    print("Running drag_stretch_with_clip_grad")
+    assert len(handle_points) == len(target_points), \
+        "number of handle point must equals target points"
+    if text_embeddings is None:
+        text_embeddings = model.get_text_embeddings(args.prompt)
+    for param in model.unet.parameters():
+        param.requires_grad = False
+    for param in model.vae.parameters():
+        param.requires_grad = False
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    clip_model = clip.load("ViT-B/16", device=device)[0].eval().requires_grad_(False)
+
     invert_code_d = copy.deepcopy(invert_code)
     if fill_mode == 'ori':
         pass
@@ -133,6 +152,58 @@ def drag_stretch_multipoint_ratio_interp(invert_code,handle_points,target_points
         invert_code_d[(mask_cp_handle>0).repeat(1,4,1,1)] = 0 
     if fill_mode == "random":
         invert_code_d[(mask_cp_handle>0).repeat(1,4,1,1)] = torch.rand_like(invert_code_d)[(mask_cp_handle>0).repeat(1,4,1,1)].to(device=invert_code_d.device)
+
+    # 1. Extract CLIP global gradient from the latent (invert_code = z_t)
+    def cal_global_grad(invert_code, text_embeddings, t, model, args):
+        device = model.device  # Ensure all tensors are on the same device
+        z = invert_code.detach().to(device).requires_grad_(True)
+        image_aug = ImageAugmentations(224, 1).to(device)
+        text_embeddings = text_embeddings.to(device)
+        t = t.to(device)
+
+        unet_output = model.unet(z, t, encoder_hidden_states=text_embeddings)
+        x_prev_0, pred_x0 = model.step(unet_output, t, z)
+        pred_image = 1 / 0.18215 * pred_x0.to(dtype=z.dtype)  # Match dtype with z
+        pred_image = model.vae.decode(pred_image)['sample'].to(device)
+        pred_image = (pred_image / 2 + 0.5).clamp(0, 1)
+
+        clip_normalize = transforms.Normalize(
+            mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]
+        )
+
+        aug_img = image_aug(pred_image).add(1).div(2)
+        clip_img = clip_normalize(aug_img).to(device)  # Ensure clip_img is on the same device
+
+        lora_prompt = clip.tokenize(args.drag_prompt).to(device)
+        image_features = clip_model.encode_image(clip_img).to(device)
+        text_features = clip_model.encode_text(lora_prompt).to(device)
+        x = F.normalize(image_features, dim=-1)
+        y = F.normalize(text_features, dim=-1)
+        clip_loss = 1 - (x @ y.t()).squeeze()
+        clip_loss = args.clip_loss_coef * clip_loss
+
+        # Ensure clip_loss is on the same device as z
+        clip_loss = clip_loss.to(device)
+
+        # Debugging: Print devices of tensors
+        print(f'{model.device=}')
+        print(f"z device: {z.device}, clip_loss device: {clip_loss.device}")
+        print(f"text_embeddings device: {text_embeddings.device}, t device: {t.device}")
+        print(f"clip_img device: {clip_img.device}")
+        print(f"image_features device: {image_features.device}, text_features device: {text_features.device}")
+
+        try:
+            grad_global = torch.autograd.grad(clip_loss, z)[0]
+        except RuntimeError as e:
+            print(f"RuntimeError during autograd.grad: {e}")
+            raise
+
+        del pred_image, clip_img, aug_img, image_features, text_features
+        return grad_global
+
+    if args.drag_prompt != "":
+        grad_global = cal_global_grad(invert_code, text_embeddings, t, model, args)  # shape: (1, 4, H, W)
+
 
     index_1 = torch.nonzero(mask_cp_handle) 
     O,R = get_circle(mask_cp_handle)   
@@ -170,6 +241,31 @@ def drag_stretch_multipoint_ratio_interp(invert_code,handle_points,target_points
         C = index[-2:]
         radio_factor = move_vectors_radio[j]/move_vectors_radio[j].sum()
         move_vector = (radio_factor*move_vectors[j].T).T.sum(dim=0)
+
+        ### CLIP grad fusion
+        if grad_global is not None:
+            # C = [y, x], index[-2:] from mask
+            y, x = int(C[0].item()), int(C[1].item())
+
+            # Project CLIP gradient vector into 2D motion space (dy, dx)
+            clip_vec = grad_global[0, :, y, x]  # vector of shape [4] (latent dim)
+
+            # Simple projection into spatial motion: e.g. use 2D mean/std or linear layer
+            dy = clip_vec.mean().item()
+            dx = clip_vec.std().item()
+            clip_motion_vector = torch.tensor([dy, dx], device=move_vector.device)
+
+            # Fuse via cosine-aware weighting like CLIPDrag
+            cos_sim = torch.nn.functional.cosine_similarity(
+                move_vector.unsqueeze(0), clip_motion_vector.unsqueeze(0)
+            )
+            alpha = args.fuse_coef  # similar to pro_lambda
+
+            if cos_sim >= 0:
+                move_vector = move_vector + alpha * (1 - cos_sim ** 2).sqrt() * clip_motion_vector
+            else:
+                move_vector = move_vector + alpha * cos_sim * clip_motion_vector
+
         point_new = torch.round(C+move_vector)
 
         # for draw arrow chart
@@ -213,9 +309,4 @@ def drag_stretch_multipoint_ratio_interp(invert_code,handle_points,target_points
 
     if fill_mode == "interpolation":
         invert_code_d = interpolation(invert_code_d)
-    return invert_code_d  
-
-
-
-
-
+    return invert_code_d

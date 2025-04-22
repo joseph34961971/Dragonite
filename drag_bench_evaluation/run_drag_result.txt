@@ -1,0 +1,50 @@
+***************
+***************
+2025-04-13 00:31:16
+drag_diffusion_0506_inter_nolora_kvcopy_inverse10__80_0.7_0.01_3:  
+use time sum: 915.126193523407 
+use save time sum: 12.31529712677002 
+use drag time sum: 902.810896396637 
+use drag time per point: 2.5868507060075556
+
+
+***************
+***************
+2025-04-14 17:49:38
+drag_diffusion_0506_inter_nolora_kvcopy_inverse10__80_0.7_0.01_3:  
+use time sum: 1405.3574481010437 
+use save time sum: 12.310800075531006 
+use drag time sum: 1393.0466480255127 
+use drag time per point: 3.9915376734255377
+
+
+***************
+***************
+2025-04-14 18:12:32
+drag_diffusion_0506_inter_nolora_kvcopy_inverse10__80_0.7_0.01_3:  
+use time sum: 905.0426821708679 
+use save time sum: 12.270949363708496 
+use drag time sum: 892.7717328071594 
+use drag time per point: 2.558085194289855
+
+
+***************
+***************
+2025-04-18 18:09:38
+fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_0.7:  
+use time sum: 1374.239093542099 
+use save time sum: 12.288470268249512 
+use drag time sum: 1361.9506232738495 
+use drag time per point: 3.9024373159709156
+
+
+***************
+***************
+2025-04-20 19:32:24
+fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5.0:  
+use time sum: 1313.7254869937897 
+use save time sum: 12.232136249542236 
+use drag time sum: 1301.4933507442474 
+use drag time per point: 3.729207308722772
+
+

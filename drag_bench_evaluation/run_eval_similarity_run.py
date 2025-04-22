@@ -61,7 +61,7 @@ if __name__ == '__main__':
         'other_objects',
     ]
 
-    original_img_root = 'path to DragBench'
+    original_img_root = './drag_bench_data'
 
     for target_root in args.eval_root:
         all_lpips = []

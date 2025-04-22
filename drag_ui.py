@@ -22,6 +22,9 @@ LENGTH=480 # length of the square area displaying/editing images
 LENGTH_OM = 720
 local_models_dir = "./local_pretrained_models"
 
+# clip_loss_coef=0.7
+# fuse_coef=5.0
+
 with gr.Blocks() as demo:
     # layout definition
     with gr.Row():
@@ -59,9 +62,10 @@ with gr.Blocks() as demo:
             lora_path = gr.Textbox(value="./lora_tmp", label="LoRA path (optional)")
             lora_status_bar = gr.Textbox(label="display LoRA training status")
             n_inference_step = gr.Textbox(value="10", label="n_inference_step") # add
-            task_cat = gr.Dropdown(value="continuous drag",
+            task_cat = gr.Dropdown(value="fast clip",
                 label="task",
-                choices=["continuous drag"]
+                choices=["continuous drag",
+                         "fast clip"]
             )
             fill_mode = gr.Dropdown(value="interpolation",
                 label="fill mode",
@@ -266,6 +270,7 @@ with gr.Blocks() as demo:
         input_image,
         mask,
         prompt,
+        prompt, ### drag prompt
         selected_points,
         inversion_strength,
         model_path,

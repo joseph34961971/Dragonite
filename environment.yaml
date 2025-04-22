@@ -1,4 +1,4 @@
-name: fastdrag
+name: dragresearch
 channels:
   - pytorch
   - defaults
@@ -49,3 +49,4 @@ dependencies:
       - jmespath==1.0.1
       # - basicsr==1.4.2
       - httpx==0.27.0
+      - lpips==0.1.4

@@ -41,6 +41,7 @@ import torchvision.transforms.functional as Fu
 
 from .shift_test import shift_matrix,copy_past,paint_past
 from .continuous_drag import drag_stretch_multipoint_ratio_interp
+from .fast_clip_utils import drag_stretch_with_clip_grad
 torch.set_printoptions(profile="full")
 import copy
 
@@ -217,6 +218,7 @@ def run_drag(source_image,
              image_with_clicks,
              mask,
              prompt,
+             drag_prompt,
              points,
              inversion_strength,
              model_path,
@@ -239,10 +241,11 @@ def run_drag(source_image,
     scheduler = DDIMScheduler(beta_start=0.00085, beta_end=0.012,
                           beta_schedule="scaled_linear", clip_sample=False,
                           set_alpha_to_one=False, steps_offset=1)
+    print("This is model path: ", model_path)
     model = DragPipeline.from_pretrained(model_path, scheduler=scheduler, torch_dtype=torch.float16)
+    model = model.to(device)
     # call this function to override unet forward function,
     # so that intermediate features are returned after forward
-    
     
     # add for lcm
     use_lcm_unet=True
@@ -274,7 +277,7 @@ def run_drag(source_image,
         ).to(model.vae.device, model.vae.dtype)
 
     # off load model to cpu, which save some memory.
-    model.enable_model_cpu_offload()
+    # model.enable_model_cpu_offload()
 
     # initialize parameters
     seed = 42 # random seed used by a lot of people for unknown reason
@@ -283,10 +286,18 @@ def run_drag(source_image,
     args = SimpleNamespace()
     # print("prompt:", prompt)
     args.prompt = prompt
+    args.drag_prompt = drag_prompt if drag_prompt != "" else prompt 
+
     args.points = points
     args.n_inference_step = int(n_inference_step) #50
     args.n_actual_inference_step = round(inversion_strength * args.n_inference_step)
     args.guidance_scale = 1.0
+    args.clip_loss_coef = 0.7
+    args.fuse_coef = 5.0
+
+    print("guidance_scale:", args.guidance_scale)
+    print("clip_loss_coef:", args.clip_loss_coef)
+    print("fuse_coef:", args.fuse_coef)
 
     args.unet_feature_idx = [3]
 
@@ -350,6 +361,7 @@ def run_drag(source_image,
     use_lora = 0
     use_rlc_attn = 0
     use_drag_stretch = 0
+    use_fast_clip = 0
 
     use_kv_copy= 1
     use_onestep_latent_copy = 1     # copy in one step, only in last latent
@@ -369,6 +381,15 @@ def run_drag(source_image,
         use_lora = 0
         use_rlc_attn = 0
         use_drag_stretch = 1
+        use_kv_copy= 1
+        use_onestep_latent_copy = 0
+    elif task_cat == "fast clip":
+        tex = f"_cd"
+        print("the task is fast clip")
+        use_lora = 0
+        use_rlc_attn = 0
+        use_drag_stretch = 0
+        use_fast_clip = 1
         use_kv_copy= 1
         use_onestep_latent_copy = 0
     else:
@@ -408,6 +429,7 @@ def run_drag(source_image,
     # if text_embeddings is None:
     #     print("text_embeddings is none")
 
+    print("hahahah", args.guidance_scale)
     # invert the source image
     # the latent code resolution is too small, only 64*64
     invert_code = model.invert(source_image,
@@ -440,6 +462,20 @@ def run_drag(source_image,
                                     target_points=target_points,
                                     mask_cp_handle=mask_cp_handle,
                                     fill_mode=fill_mode)
+
+    if use_fast_clip:
+        t = model.scheduler.timesteps[args.n_inference_step - args.n_actual_inference_step]
+        # print("******use fast clip*******")
+        invert_code = drag_stretch_with_clip_grad(model=model,
+                                    invert_code=invert_code,
+                                    text_embeddings=text_embeddings,
+                                    t=t,
+                                    handle_points=handle_points,
+                                    target_points=target_points,
+                                    mask_cp_handle=mask_cp_handle,
+                                    args=args,
+                                    fill_mode=fill_mode,
+                                    )
         
     # empty cache to save memory
     torch.cuda.empty_cache()
@@ -484,7 +520,7 @@ def run_drag(source_image,
 
     # add use_noise_copy
     # inference the synthesized image
-    if use_noise_copy or use_onestep_latent_copy or use_substep_latent_copy or use_drag_stretch:
+    if use_noise_copy or use_onestep_latent_copy or use_substep_latent_copy or use_drag_stretch or use_fast_clip:
         # print('sample from latent directly')
         gen_image = model(
             prompt=args.prompt,
@@ -542,7 +578,11 @@ def run_drag(source_image,
 
     out_image = gen_image.cpu().permute(0, 2, 3, 1).numpy()[0]
     out_image = (out_image * 255).astype(np.uint8)
-    return gr.Image.update(value=out_image)
+
+    ### for gradio 
+    # return gr.Image.update(value=out_image)
+    
+    return out_image
 
 # -------------------------------------------------------
 

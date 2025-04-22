@@ -38,7 +38,7 @@ if __name__ == '__main__':
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
 
     # using SD-2.1
-    dift = SDFeaturizer('path to stable-diffusion-2-1')
+    dift = SDFeaturizer('runwayml/stable-diffusion-v1-5')
     # dift = SDFeaturizer('path to stable-diffusion-v1-5')
 
     all_category = [
@@ -54,7 +54,7 @@ if __name__ == '__main__':
         'other_objects',
     ]
 
-    original_img_root = 'path to DragBench'
+    original_img_root = './drag_bench_data'
 
     for target_root in args.eval_root:
         # fixing the seed for semantic correspondence
