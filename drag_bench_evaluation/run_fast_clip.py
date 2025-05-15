@@ -61,16 +61,16 @@ if __name__ == '__main__':
     parser.add_argument('--task_cat', type=str, default=None, help='task category')
     parser.add_argument('--guidance_scale', type=float, default=1.0, help='guidance scale')
     parser.add_argument('--clip_loss_coef', type=float, default=0.7, help='clip loss coefficient')
-    parser.add_argument('--fuse_coef', type=float, default=0.7, help='fuse coefficient')
+    parser.add_argument('--fuse_coef', type=float, default=100, help='fuse coefficient')
 
     args = parser.parse_args()
 
     all_category = [
+        'animals',
         'art_work',
         'land_scape',
         'building_city_view',
         'building_countryside_view',
-        'animals',
         'human_head',
         'human_upper_body',
         'human_full_body',
@@ -82,13 +82,23 @@ if __name__ == '__main__':
     root_dir = './drag_bench_data'
     lora_dir = './drag_bench_lora'
     if args.result_dir == None:
-        result_dir = 'fast_clip_inter_nolora_kvcopy_inverse10' + \
+        if len(all_category) > 1:
+            result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
             '_' + str(args.lora_steps) + \
             '_' + str(args.inv_strength) + \
             '_' + str(args.latent_lr) + \
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
             '_' + str(args.fuse_coef)
+        else:
+            result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
+            '_' + str(args.lora_steps) + \
+            '_' + str(args.inv_strength) + \
+            '_' + str(args.latent_lr) + \
+            '_' + str(args.unet_feature_idx) + \
+            '_' + str(args.clip_loss_coef) + \
+            '_' + str(args.fuse_coef) + \
+            '_' + "animals"
     else:
         result_dir = args.result_dir+ \
             '_' + str(args.lora_steps) + \
@@ -120,9 +130,11 @@ if __name__ == '__main__':
             # load meta data
             with open(os.path.join(sample_path, 'meta_data.pkl'), 'rb') as f:
                 meta_data = pickle.load(f)
+            print(meta_data)
             prompt = meta_data['prompt']
             mask = meta_data['mask']
             points = meta_data['points']
+            drag_prompt = meta_data['drag_prompt']
 
             # load lora
             lora_path = os.path.join(lora_dir, cat, sample_name, str(args.lora_steps))
@@ -143,10 +155,10 @@ if __name__ == '__main__':
                                 start_layer=10,
                                 n_inference_step=args.n_inference_step,
                                 task_cat="fast clip",
-                                fill_mode='interpolation', 
-                                guidance_scale=args.guidance_scale,
-                                clip_loss_coef=args.clip_loss_coef,
-                                fuse_coef=args.fuse_coef,
+                                fill_mode='interpolation',
+                                guidance_scale = args.guidance_scale,
+                                clip_loss_coef = args.clip_loss_coef,
+                                fuse_coef = args.fuse_coef,
                                 use_kv_cp="default",
                                 use_lora_ = "default",
                                 testif=1,

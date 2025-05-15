@@ -42,11 +42,11 @@ if __name__ == '__main__':
     # dift = SDFeaturizer('path to stable-diffusion-v1-5')
 
     all_category = [
+        'animals',
         'art_work',
         'land_scape',
         'building_city_view',
         'building_countryside_view',
-        'animals',
         'human_head',
         'human_upper_body',
         'human_full_body',
@@ -67,6 +67,7 @@ if __name__ == '__main__':
                     continue
                 with open(os.path.join(original_img_root, cat, file_name, 'meta_data.pkl'), 'rb') as f:
                     meta_data = pickle.load(f)
+                # prompt = meta_data['prompt']
                 prompt = meta_data['prompt']
                 points = meta_data['points']
 

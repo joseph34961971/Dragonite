@@ -456,8 +456,6 @@ class DragPipeline(StableDiffusionPipeline):
         latents = self.image2latent(image)
 
         # unconditional embedding for classifier free guidance
-        print(type(guidance_scale))
-        print(guidance_scale)
         if guidance_scale > 1.:
             max_length = text_input.input_ids.shape[-1]
             unconditional_input = self.tokenizer(

@@ -48,3 +48,113 @@ use drag time sum: 1301.4933507442474
 use drag time per point: 3.729207308722772
 
 
+***************
+***************
+2025-04-29 18:06:20
+fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_6:  
+use time sum: 1538.7851598262787 
+use save time sum: 12.214133977890015 
+use drag time sum: 1526.5710258483887 
+use drag time per point: 4.374129013892231
+
+
+***************
+***************
+2025-04-29 23:50:44
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10:  
+use time sum: 1426.1014950275421 
+use save time sum: 12.484591007232666 
+use drag time sum: 1413.6169040203094 
+use drag time per point: 4.0504782350152135
+
+
+***************
+***************
+2025-04-30 13:32:43
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5:  
+use time sum: 1410.786747932434 
+use save time sum: 12.498058557510376 
+use drag time sum: 1398.2886893749237 
+use drag time per point: 4.0065578492118155
+
+
+***************
+***************
+2025-04-30 15:35:40
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1000:  
+use time sum: 1412.1340103149414 
+use save time sum: 12.334365129470825 
+use drag time sum: 1399.7996451854706 
+use drag time per point: 4.010887235488455
+
+
+***************
+***************
+2025-05-05 18:16:05
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+use time sum: 135.40367364883423 
+use save time sum: 1.2966153621673584 
+use drag time sum: 134.10705828666687 
+use drag time per point: 0.3842609119961801
+
+
+***************
+***************
+2025-05-05 18:28:24
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+use time sum: 135.4285762310028 
+use save time sum: 1.3125457763671875 
+use drag time sum: 134.11603045463562 
+use drag time per point: 0.3842866202138556
+
+
+***************
+***************
+2025-05-06 01:15:55
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+use time sum: 137.92275071144104 
+use save time sum: 1.292001485824585 
+use drag time sum: 136.63074922561646 
+use drag time per point: 0.39149211812497553
+
+
+***************
+***************
+2025-05-06 01:24:34
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+use time sum: 136.73496222496033 
+use save time sum: 1.2873618602752686 
+use drag time sum: 135.44760036468506 
+use drag time per point: 0.38810200677560186
+
+
+***************
+***************
+2025-05-06 01:30:11
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+use time sum: 134.56283330917358 
+use save time sum: 1.2855608463287354 
+use drag time sum: 133.27727246284485 
+use drag time per point: 0.38188330218580185
+
+
+***************
+***************
+2025-05-06 01:36:44
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+use time sum: 88.16994094848633 
+use save time sum: 1.28265380859375 
+use drag time sum: 86.88728713989258 
+use drag time per point: 0.248960708137228
+
+
+***************
+***************
+2025-05-06 02:47:08
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0:  
+use time sum: 1412.6154472827911 
+use save time sum: 12.199952602386475 
+use drag time sum: 1400.4154946804047 
+use drag time per point: 4.01265184722179
+
+

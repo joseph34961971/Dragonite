@@ -216,9 +216,9 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
         aug_img = image_aug(pred_image).add(1).div(2)
         clip_img = clip_normalize(aug_img).to(device)  # Ensure clip_img is on the same device
 
-        drag_prompt = clip.tokenize(args.drag_prompt).to(device)
+        lora_prompt = clip.tokenize(args.drag_prompt).to(device)
         image_features = clip_model.encode_image(clip_img).to(device)
-        text_features = clip_model.encode_text(drag_prompt).to(device)
+        text_features = clip_model.encode_text(lora_prompt).to(device)
         x = F.normalize(image_features, dim=-1)
         y = F.normalize(text_features, dim=-1)
         clip_loss = 1 - (x @ y.t()).squeeze()
@@ -241,7 +241,7 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
             print(f"RuntimeError during autograd.grad: {e}")
             raise
 
-        # visualize_grad_global(grad_global, z)
+        visualize_grad_global(grad_global, z)
 
         del pred_image, clip_img, aug_img, image_features, text_features
         return grad_global
@@ -286,34 +286,31 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
         radio_factor = move_vectors_radio[j]/move_vectors_radio[j].sum()
         move_vector = (radio_factor*move_vectors[j].T).T.sum(dim=0)
 
-        if grad_global is not None:
-            # C = [y, x], index[-2:] from mask
-            y, x = int(C[0].item()), int(C[1].item())
+        # ### CLIP grad fusion
+        # if grad_global is not None:
+        #     # C = [y, x], index[-2:] from mask
+        #     y, x = int(C[0].item()), int(C[1].item())
 
-            # Project CLIP gradient vector into 2D motion space (dy, dx)
-            clip_vec = grad_global[0, :, y, x]  # vector of shape [4] (latent dim)
+        #     # Project CLIP gradient vector into 2D motion space (dy, dx)
+        #     clip_vec = grad_global[0, :, y, x]  # vector of shape [4] (latent dim)
 
-            # Simple projection into spatial motion: e.g. use 2D mean/std or linear layer
-            dy = clip_vec.mean().item()
-            dx = clip_vec.std().item()
-            clip_motion_vector = torch.tensor([dy, dx], device=move_vector.device)
+        #     # Simple projection into spatial motion: e.g. use 2D mean/std or linear layer
+        #     dy = clip_vec.mean().item()
+        #     dx = clip_vec.std().item()
+        #     clip_motion_vector = torch.tensor([dy, dx], device=move_vector.device)
+        #     plot_clip_motion_vector = clip_motion_vector.clone()
 
-            # Fuse via cosine-aware weighting like CLIPDrag
-            cos_sim = torch.nn.functional.cosine_similarity(
-                move_vector.unsqueeze(0), clip_motion_vector.unsqueeze(0)
-            )
-            alpha = args.fuse_coef  # similar to pro_lambda
+        #     # Fuse via cosine-aware weighting like CLIPDrag
+        #     cos_sim = torch.nn.functional.cosine_similarity(
+        #         move_vector.unsqueeze(0), clip_motion_vector.unsqueeze(0)
+        #     )
+        #     alpha = args.fuse_coef  # similar to pro_lambda
+        #     alpha = 100
 
-            # print(f"move vector before fusion: {move_vector}  clip_motion_vector: {clip_motion_vector}  cos_sim: {cos_sim} alpha: {alpha}")
-
-            if cos_sim >= 0:
-                move_vector = move_vector + alpha * (1 - cos_sim ** 2).sqrt() * clip_motion_vector
-            else:
-                move_vector = move_vector + alpha * cos_sim * clip_motion_vector
-
-            # print(f"move vector after fusion: {move_vector}  clip_motion_vector: {clip_motion_vector}  cos_sim: {cos_sim} alpha: {alpha}")
-
-        # print(f"move_vector: {move_vector} C: {C} radio_factor: {radio_factor}  move_vectors_radio[j]: {move_vectors_radio[j]}")
+        #     if cos_sim >= 0:
+        #         move_vector = move_vector + alpha * (1 - cos_sim ** 2).sqrt() * clip_motion_vector
+        #     else:
+        #         move_vector = move_vector + alpha * cos_sim * clip_motion_vector
 
         point_new = torch.round(C+move_vector)
 
@@ -365,8 +362,7 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
     if fill_mode == "interpolation":
         invert_code_d = interpolation(invert_code_d)
         print(f"invert_code_d shape: {invert_code_d.shape}")
-        print(f"grad_global shape: {grad_global.shape}")
 
-        # visualize_grad_global(grad_global, invert_code_d)
-
-    return invert_code_d, grad_global
+        clip_invert_code_d = invert_code_d + args.fuse_coef * grad_global
+        print(f"clip_invert_code_d shape: {clip_invert_code_d.shape}")
+    return clip_invert_code_d

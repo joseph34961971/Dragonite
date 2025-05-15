@@ -49,11 +49,11 @@ if __name__ == '__main__':
     clip_model, clip_preprocess = clip.load("ViT-B/32", device=device, jit=False)
 
     all_category = [
+        'animals',
         'art_work',
         'land_scape',
         'building_city_view',
         'building_countryside_view',
-        'animals',
         'human_head',
         'human_upper_body',
         'human_full_body',

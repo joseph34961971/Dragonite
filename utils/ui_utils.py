@@ -37,6 +37,10 @@ from .drag_utils import drag_diffusion_update
 from .lora_utils import train_lora
 from .attn_utils import register_attention_editor_diffusers, MutualSelfAttentionControl
 
+from .mask_utils import get_seg_mask,move_mask
+from skimage.measure import regionprops
+from .sam2.sam2_utils import generate_sam2_seg
+
 import torchvision.transforms.functional as Fu
 
 from .shift_test import shift_matrix,copy_past,paint_past
@@ -229,6 +233,9 @@ def run_drag(source_image,
              n_inference_step,
              task_cat,
              fill_mode,
+             guidance_scale,
+             clip_loss_coef,
+             fuse_coef,
              use_kv_cp="default",
              use_lora_ = "default",
              lcm_model_path = "SimianLuo/LCM_Dreamshaper_v7",
@@ -291,9 +298,13 @@ def run_drag(source_image,
     args.points = points
     args.n_inference_step = int(n_inference_step) #50
     args.n_actual_inference_step = round(inversion_strength * args.n_inference_step)
-    args.guidance_scale = 1.0
-    args.clip_loss_coef = 0.7
-    args.fuse_coef = 5.0
+    args.guidance_scale = guidance_scale
+    args.clip_loss_coef = clip_loss_coef
+    args.fuse_coef = fuse_coef
+
+    print("inversion_strength:", inversion_strength)
+    print("n_inference_step:", n_inference_step)
+    print("n_actual_inference_step:", args.n_actual_inference_step)
 
     print("guidance_scale:", args.guidance_scale)
     print("clip_loss_coef:", args.clip_loss_coef)
@@ -464,9 +475,10 @@ def run_drag(source_image,
                                     fill_mode=fill_mode)
 
     if use_fast_clip:
+        print("******use fast clip*******")
         t = model.scheduler.timesteps[args.n_inference_step - args.n_actual_inference_step]
         # print("******use fast clip*******")
-        invert_code = drag_stretch_with_clip_grad(model=model,
+        invert_code, grad_global = drag_stretch_with_clip_grad(model=model,
                                     invert_code=invert_code,
                                     text_embeddings=text_embeddings,
                                     t=t,

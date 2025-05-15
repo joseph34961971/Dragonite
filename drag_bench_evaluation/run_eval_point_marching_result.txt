@@ -26,3 +26,94 @@ fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5.0/:
 mean distance: 34.45777893066406
 
 
+***************
+***************
+2025-04-29 20:56:59
+fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_6:  
+mean distance: 34.4555778503418
+
+
+***************
+***************
+2025-04-30 12:54:32
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10/:  
+mean distance: 34.461734771728516
+
+
+***************
+***************
+2025-04-30 15:09:24
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5:  
+mean distance: 34.460384368896484
+
+
+***************
+***************
+2025-05-02 16:56:38
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1000:  
+mean distance: 36.824989318847656
+
+
+***************
+***************
+2025-05-05 18:21:30
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+mean distance: 29.826377868652344
+
+
+***************
+***************
+2025-05-05 18:29:39
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+mean distance: 43.652870178222656
+
+
+***************
+***************
+2025-05-06 01:18:37
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+mean distance: 43.622657775878906
+
+
+***************
+***************
+2025-05-06 01:19:52
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+mean distance: 43.6602783203125
+
+
+***************
+***************
+2025-05-06 01:26:25
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+mean distance: 43.78022003173828
+
+
+***************
+***************
+2025-05-06 01:31:00
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+mean distance: 43.96626281738281
+
+
+***************
+***************
+2025-05-06 01:32:05
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+mean distance: 43.67527770996094
+
+
+***************
+***************
+2025-05-06 01:37:30
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+mean distance: 43.67527770996094
+
+
+***************
+*************** w/ clip global gradient, w original prompt as drag prompt
+2025-05-06 02:53:03
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0:  
+mean distance: 34.15419006347656
+
+

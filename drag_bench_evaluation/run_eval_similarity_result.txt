@@ -34,3 +34,84 @@ avg 1-lpips: 0.8591651223236467
 avg clip sim: 0.96337890625
 
 
+***************
+***************
+2025-04-29 22:18:42
+fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_6:  
+avg lpips: 0.1407853819884178
+avg 1-lpips: 0.8592146180115822
+avg clip sim: 0.96337890625
+
+
+***************
+***************
+2025-04-30 12:58:21
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10/:  
+avg lpips: 0.1407906094974861
+avg 1-lpips: 0.8592093905025139
+avg clip sim: 0.96337890625
+
+
+***************
+***************
+2025-04-30 15:04:55
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5:  
+avg lpips: 0.14078173590142554
+avg 1-lpips: 0.8592182640985745
+avg clip sim: 0.96337890625
+
+
+***************
+***************
+2025-05-02 16:41:37
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1000:  
+avg lpips: 0.16355526315548072
+avg 1-lpips: 0.8364447368445193
+avg clip sim: 0.9541015625
+
+
+***************
+***************
+2025-05-05 18:20:09
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+avg lpips: 0.17201532311737538
+avg 1-lpips: 0.8279846768826247
+avg clip sim: 0.95068359375
+
+
+***************
+***************
+2025-05-05 18:31:41
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+avg lpips: 0.1494488801807165
+avg 1-lpips: 0.8505511198192834
+avg clip sim: 0.9697265625
+
+
+***************
+***************
+2025-05-06 01:20:22
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_5_animals:  
+avg lpips: 0.14954865276813506
+avg 1-lpips: 0.8504513472318649
+avg clip sim: 0.9697265625
+
+
+***************
+***************
+2025-05-06 01:25:34
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1_animals:  
+avg lpips: 0.14948267508298158
+avg 1-lpips: 0.8505173249170184
+avg clip sim: 0.9697265625
+
+
+***************
+*************** w/ clip global gradient, w original prompt as drag prompt
+2025-05-06 02:47:18
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0:  
+avg lpips: 0.14092924621228764
+avg 1-lpips: 0.8590707537877124
+avg clip sim: 0.96337890625
+
+
