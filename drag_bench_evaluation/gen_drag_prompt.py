@@ -24,7 +24,7 @@ all_category = [
 # Focus on the semantic or meaningful visual change.
 # """
 
-PROMPT_TEMPLATE = "Generate a one line caption of what happen after the drag editing (red for starting point, blue for ending point)"
+PROMPT_TEMPLATE = "Generate a one line caption of what happen after the drag editing (red for starting point, blue for ending point), focus on the moiton that drag editing create, or the object changes."
 
 # Initialize AzureOpenAI client
 client = AzureOpenAI(
@@ -112,9 +112,9 @@ def update_metadata(folder_path):
 
     # Save gpt_response to drag_prompt.txt
     with open(drag_prompt_path, "w") as f:
-        f.write("gpt_response")
+        f.write(gpt_response)
 
-    metadata["drag_prompt"] = gpt_response
+    # metadata["drag_prompt"] = gpt_response
 
     with open(metadata_path, "wb") as f:
         pickle.dump(metadata, f)
@@ -131,14 +131,14 @@ def batch_process_all(root_dir):
     for sub in sorted(os.listdir(root_dir)):
         folder = os.path.join(root_dir, sub)
         if os.path.isdir(folder):
-            #update_metadata(folder)
-            create_file(folder)
+            update_metadata(folder)
+            #create_file(folder)
 
 # Example usage
 if __name__ == "__main__":
 
     for cat in all_category:
-        dataset_root = os.path.join("drag_bench_data", cat)
+        dataset_root = os.path.join("drag_bench_data_gen", cat)
         print(dataset_root)
         # shared_prompt = "You are an Drag editor, given an image, please generate one-line caption to describe the object motion according to the dragging point on the image"
         batch_process_all(dataset_root)

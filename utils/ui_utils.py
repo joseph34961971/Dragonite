@@ -37,10 +37,6 @@ from .drag_utils import drag_diffusion_update
 from .lora_utils import train_lora
 from .attn_utils import register_attention_editor_diffusers, MutualSelfAttentionControl
 
-from .mask_utils import get_seg_mask,move_mask
-from skimage.measure import regionprops
-from .sam2.sam2_utils import generate_sam2_seg
-
 import torchvision.transforms.functional as Fu
 
 from .shift_test import shift_matrix,copy_past,paint_past
@@ -236,13 +232,16 @@ def run_drag(source_image,
              guidance_scale,
              clip_loss_coef,
              fuse_coef,
+             projection_mode,
              use_kv_cp="default",
              use_lora_ = "default",
              lcm_model_path = "SimianLuo/LCM_Dreamshaper_v7",
              mask_fill = None,
              testif=0,
-             save_dir="./results",
+             save_dir="./results"
     ):
+
+    print(f"projection mode: {projection_mode}")
     # initialize model
     device = torch.device("cuda") if torch.cuda.is_available() else torch.device("cpu")
     scheduler = DDIMScheduler(beta_start=0.00085, beta_end=0.012,
@@ -301,6 +300,10 @@ def run_drag(source_image,
     args.guidance_scale = guidance_scale
     args.clip_loss_coef = clip_loss_coef
     args.fuse_coef = fuse_coef
+
+    # args.guidance_scale = 0.5
+    # args.clip_loss_coef = 0.7
+    # args.fuse_coef = 100
 
     print("inversion_strength:", inversion_strength)
     print("n_inference_step:", n_inference_step)
@@ -487,6 +490,7 @@ def run_drag(source_image,
                                     mask_cp_handle=mask_cp_handle,
                                     args=args,
                                     fill_mode=fill_mode,
+                                    projection_mode=projection_mode
                                     )
         
     # empty cache to save memory

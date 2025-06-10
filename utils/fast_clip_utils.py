@@ -20,46 +20,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 import numpy as np
 
-def visualize_grad_global(grad_global, image, save_path="grad_global_visualization.png"):
-    """
-    Visualize grad_global on the image.
+# from .edit import EditStableDiffusion
+# from utils.define_argparser import parse_args, preset
 
-    Args:
-        grad_global (torch.Tensor): Gradient tensor of shape (1, 4, H, W).
-        image (torch.Tensor): Image tensor of shape (1, 3, H, W) (normalized between 0 and 1).
-        save_path (str, optional): Path to save the visualization. If None, the plot will be shown.
-    """
-    print(f"grad_global shape: {grad_global.shape}")
-    print(f"image shape: {image.shape}")
-    assert grad_global.dim() == 4, "grad_global should have shape (1, 4, H, W)"
-    assert image.dim() == 4, "image should have shape (1, 3, H, W)"
-    
-    # Convert image to numpy for visualization
-    image_np = image.squeeze(0).permute(1, 2, 0).detach().cpu().numpy()
-    image_np = (image_np * 255).astype(np.uint8)  # Convert to 0-255 range
-
-    # Compute 2D gradient vectors (dy, dx) from grad_global
-    grad_y = grad_global[0, 0, :, :].detach().cpu().numpy()
-    grad_x = grad_global[0, 1, :, :].detach().cpu().numpy()
-
-    # Create a grid for quiver plot
-    H, W = grad_y.shape
-    y, x = np.meshgrid(np.arange(H), np.arange(W), indexing='ij')
-
-    # Plot the image
-    plt.figure(figsize=(10, 10))
-    plt.imshow(image_np)
-    plt.quiver(x, y, grad_x, grad_y, color='red', angles='xy', scale_units='xy', scale=1, width=0.002)
-
-    plt.title("Visualization of grad_global")
-    plt.axis('off')
-
-    # Save or show the plot
-    if save_path:
-        plt.savefig(save_path, bbox_inches='tight')
-        plt.close()
-    else:
-        plt.show()
 
 def judge_edge(point_tuple,invert_code_d):
     y,x = point_tuple[0],point_tuple[1]
@@ -142,6 +105,92 @@ def interpolation(x):
 
     return x
 
+def interpolate_latent_bnn(latent: torch.Tensor):
+    """
+    Fill null (zero) regions in a diffusion latent tensor using bilateral nearest-neighbor interpolation,
+    and normalize each newly interpolated vector by its L2 norm across channels.
+    """
+    assert latent.ndim == 4, "Expected tensor of shape (1, C, N, M)"
+    B, C, H, W = latent.shape  # B=1 in our case
+    eps = 1e-8  # small constant to avoid division-by-zero
+    
+    # Identify null pixels (all channels == 0). Create a mask of shape (H, W) where True indicates a null location.
+    null_mask = (latent == 0).all(dim=1, keepdim=False)  # shape (B, H, W), with B=1
+    
+    # Continue interpolation until no null pixels remain or no change occurs
+    changed = True
+    while changed:
+        changed = False
+        # Loop through each spatial location
+        for i in range(H):
+            for j in range(W):
+                if null_mask[0, i, j]:  # only process if this pixel is currently null
+                    # Find nearest non-null neighbor to the left and right (same row)
+                    left_val = None
+                    right_val = None
+                    for jj in range(j-1, -1, -1):  # search left
+                        if not null_mask[0, i, jj]:
+                            left_val = latent[0, :, i, jj]
+                            break
+                    for jj in range(j+1, W):  # search right
+                        if not null_mask[0, i, jj]:
+                            right_val = latent[0, :, i, jj]
+                            break
+                    # Interpolate horizontally if possible
+                    if left_val is not None and right_val is not None:
+                        horiz_val = 0.5 * (left_val + right_val)
+                    elif left_val is not None:
+                        horiz_val = left_val.clone()  # only left neighbor available
+                    elif right_val is not None:
+                        horiz_val = right_val.clone()  # only right neighbor available
+                    else:
+                        horiz_val = None
+                    
+                    # Find nearest non-null neighbor above and below (same column)
+                    top_val = None
+                    bottom_val = None
+                    for ii in range(i-1, -1, -1):  # search up
+                        if not null_mask[0, ii, j]:
+                            top_val = latent[0, :, ii, j]
+                            break
+                    for ii in range(i+1, H):  # search down
+                        if not null_mask[0, ii, j]:
+                            bottom_val = latent[0, :, ii, j]
+                            break
+                    # Interpolate vertically if possible
+                    if top_val is not None and bottom_val is not None:
+                        vert_val = 0.5 * (top_val + bottom_val)
+                    elif top_val is not None:
+                        vert_val = top_val.clone()
+                    elif bottom_val is not None:
+                        vert_val = bottom_val.clone()
+                    else:
+                        vert_val = None
+                    
+                    # Combine horizontal and vertical interpolations:
+                    if horiz_val is not None and vert_val is not None:
+                        new_val = 0.5 * (horiz_val + vert_val)
+                    elif horiz_val is not None:
+                        new_val = horiz_val
+                    elif vert_val is not None:
+                        new_val = vert_val
+                    else:
+                        # No neighbors found in any direction (should be rare, e.g., isolated region).
+                        # Skip for now – it may be filled in a later iteration.
+                        continue
+                    
+                    # **Norm normalization step** – L2 normalize the interpolated vector across channels
+                    norm = torch.linalg.norm(new_val, ord=2)  # compute L2 norm of vector (all C channels)
+                    if norm > eps:
+                        new_val = new_val / norm  # normalize to unit length
+                    # If norm is 0 (all-zero vector), we leave it as is (or it stays zero).
+                    
+                    # Assign the normalized value back to the latent tensor
+                    latent[0, :, i, j] = new_val
+                    null_mask[0, i, j] = False   # mark this pixel as filled
+                    changed = True               # note that we made a change in this iteration
+    return latent
+
 def get_circle(mask: torch.Tensor):
     rect, left_top, left_bottom, right_top, right_bottom = get_rectangle(mask=mask)
     center = torch.Tensor(((left_top[0] + right_bottom[0]) / 2, (left_top[1] + right_bottom[1]) / 2)).to(device=mask.device)  # y,x
@@ -172,8 +221,27 @@ def transform_point(point, shift_yx, scale_factor):
     return point_new
 
 
-def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_points,target_points,mask_cp_handle,args,shift_yx=None,fill_mode='interpolation'):
+def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_points,target_points,mask_cp_handle,args,shift_yx=None,fill_mode='interpolation',projection_mode="Naive"):
     print("Running drag_stretch_with_clip_grad")
+    print(args)
+    use_naive = False
+    use_jacobian = False
+    use_locoedit = False
+    grad_global = None
+    clip_semantic_direction = None
+
+    if projection_mode == "Naive":
+        print(f"use naive projection")
+        use_naive = True
+    elif projection_mode == "Jacobian":
+        print(f"use jacobian projection")
+        use_jacobian = True
+    elif projection_mode == "LOCOEdit":
+        print(f"use locoedit projection")
+        use_locoedit = True
+    else:
+        raise ValueError(f"projection method {projection_mode} not supported")
+
     assert len(handle_points) == len(target_points), \
         "number of handle point must equals target points"
     if text_embeddings is None:
@@ -195,7 +263,7 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
     if fill_mode == "random":
         invert_code_d[(mask_cp_handle>0).repeat(1,4,1,1)] = torch.rand_like(invert_code_d)[(mask_cp_handle>0).repeat(1,4,1,1)].to(device=invert_code_d.device)
 
-    # 1. Extract CLIP global gradient from the latent (invert_code = z_t)
+    ### Naive approach: extract CLIP global gradient from the latent (invert_code = z_t)
     def cal_global_grad(invert_code, text_embeddings, t, model, args):
         device = model.device  # Ensure all tensors are on the same device
         z = invert_code.detach().to(device).requires_grad_(True)
@@ -228,26 +296,144 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
         # Ensure clip_loss is on the same device as z
         clip_loss = clip_loss.to(device)
 
-        # Debugging: Print devices of tensors
-        # print(f'{model.device=}')
-        # print(f"z device: {z.device}, clip_loss device: {clip_loss.device}")
-        # print(f"text_embeddings device: {text_embeddings.device}, t device: {t.device}")
-        # print(f"clip_img device: {clip_img.device}")
-        # print(f"image_features device: {image_features.device}, text_features device: {text_features.device}")
-
-        try:
-            grad_global = torch.autograd.grad(clip_loss, z)[0]
-        except RuntimeError as e:
-            print(f"RuntimeError during autograd.grad: {e}")
-            raise
+        grad_global = torch.autograd.grad(clip_loss, z)[0]
 
         # visualize_grad_global(grad_global, z)
 
         del pred_image, clip_img, aug_img, image_features, text_features
         return grad_global
+    
+    def get_clip_semantic_direction(invert_code, t, model, args, clip_model):
+        """
+        Returns LOCOEdit-style semantic direction for the CLIP loss (w.r.t. the latent code)
+        """
+        print("calculate LOCOEdit-style semantic direction")
+        device = model.device
+        z = invert_code.detach().to(device).requires_grad_(True)
+        t = t.to(device)
+        image_aug = ImageAugmentations(224, 1).to(device)
+        drag_prompt = clip.tokenize(args.drag_prompt).to(device)
 
+        def clip_loss_fn(z_):
+            # 1. UNet forward & get denoised pred_x0
+            # Ensure all inputs to UNet are in half precision
+            # Temporarily cast UNet to half precision for forward pass
+            unet_output = model.unet.half()(z_.half(), t.half(), encoder_hidden_states=model.get_text_embeddings(args.prompt).to(device).half())
+            # Cast UNet output to float for subsequent calculations
+            unet_output = unet_output.float()
+            x_prev_0, pred_x0 = model.step(unet_output, t, z_)
+            pred_image = 1 / 0.18215 * pred_x0.to(dtype=z_.dtype)
+            # Temporarily cast VAE to half precision for decode pass
+            pred_image = model.vae.half().decode(pred_image.half())['sample'].to(device).float() # Cast result to float
+            pred_image = (pred_image / 2 + 0.5).clamp(0, 1)
+
+            # 2. CLIP preprocess
+            clip_normalize = transforms.Normalize(
+                mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]
+            )
+            aug_img = image_aug(pred_image).add(1).div(2)
+            clip_img = clip_normalize(aug_img).to(device)
+            image_features = clip_model.encode_image(clip_img)
+            text_features = clip_model.encode_text(drag_prompt)
+            x = F.normalize(image_features, dim=-1)
+            y = F.normalize(text_features, dim=-1)
+            clip_loss = 1 - (x @ y.t()).squeeze()
+            return clip_loss
+
+        # Use autograd.functional.jacobian to get the Jacobian wrt z
+        # Note: If memory is an issue, you can use torch.autograd.grad with a random vector direction
+        clip_jacobian = torch.autograd.functional.jacobian(clip_loss_fn, z)
+        # clip_jacobian shape: [1, 4, H, W] (same as z)
+        # Normalize if desired
+        clip_direction = clip_jacobian / (clip_jacobian.norm() + 1e-8)
+        return clip_direction
+
+
+    def get_locoedit_semantic_direction(invert_code, t, model, args, clip_model, n_jacobian_samples=10, n_null=5, jacobian_eps=1e-3, eps=1e-8):
+        """
+        Returns LOCOEdit-style semantic direction for the CLIP loss (w.r.t. the latent code),
+        with nullspace projection as in LOCOEdit.
+        """
+        print("calculate LOCOEdit-style semantic direction (with nullspace projection)")
+        device = model.device
+        z = invert_code.detach().to(device).float().requires_grad_(True)
+        t = t.to(device)
+        image_aug = ImageAugmentations(224, 1).to(device)
+        drag_prompt = clip.tokenize(args.drag_prompt).to(device)
+
+        def clip_loss_fn(z_):
+            # 1. UNet forward & get denoised pred_x0
+            # Ensure all inputs to UNet are in half precision
+            # Temporarily cast UNet to half precision for forward pass
+            unet_output = model.unet.half()(z_.half(), t.half(), encoder_hidden_states=model.get_text_embeddings(args.prompt).to(device).half())
+            # Cast UNet output to float for subsequent calculations
+            unet_output = unet_output.float()
+            x_prev_0, pred_x0 = model.step(unet_output, t, z_)
+            pred_image = 1 / 0.18215 * pred_x0.to(dtype=z_.dtype)
+            # Temporarily cast VAE to half precision for decode pass
+            pred_image = model.vae.half().decode(pred_image.half())['sample'].to(device).float() # Cast result to float
+            pred_image = (pred_image / 2 + 0.5).clamp(0, 1)
+
+            # 2. CLIP preprocess
+            clip_normalize = transforms.Normalize(
+                mean=[0.48145466, 0.4578275, 0.40821073], std=[0.26862954, 0.26130258, 0.27577711]
+            )
+            aug_img = image_aug(pred_image).add(1).div(2)
+            clip_img = clip_normalize(aug_img).to(device)
+            image_features = clip_model.encode_image(clip_img)
+            text_features = clip_model.encode_text(drag_prompt)
+            x = F.normalize(image_features, dim=-1)
+            y = F.normalize(text_features, dim=-1)
+            clip_loss = 1 - (x @ y.t()).squeeze()
+            return clip_loss
+
+        # 1. Get the main direction (CLIP gradient/Jacobian)
+        clip_jacobian = torch.autograd.functional.jacobian(clip_loss_fn, z).float()
+        clip_direction = clip_jacobian / (clip_jacobian.norm() + eps)
+
+        # 2. Build the local Jacobian matrix (nullspace)
+        grads = []
+        z_flat = z.detach().clone().view(-1)
+        for _ in range(n_jacobian_samples):
+            noise = torch.randn_like(z_flat)
+            noise = noise / (noise.norm() + eps)
+            z_perturbed = (z_flat + jacobian_eps * noise).view(z.shape).detach().clone().requires_grad_(True)
+            loss = clip_loss_fn(z_perturbed)
+            grad = torch.autograd.grad(loss, z_perturbed)[0].detach().view(-1).float()
+            grads.append(grad)
+        jacobian_matrix = torch.stack(grads, dim=0)  # [n_jacobian_samples, D]
+
+        # 3. SVD for nullspace basis
+        U, S, Vh = torch.linalg.svd(jacobian_matrix, full_matrices=False)
+        null_basis = Vh[:n_null, :].float()  # [n_null, D]
+
+        # 4. Nullspace projection of the direction
+        original_shape = clip_direction.shape
+        direction_flat = clip_direction.view(-1).float()
+        # Project out the nullspace components
+        # Ensure null_basis and direction_flat are float for the first matmul
+        proj_coeffs = torch.matmul(null_basis.float(), direction_flat.float()).float()    # [n_null]
+        # Ensure proj_coeffs and null_basis are float for the second matmul
+        null_proj = torch.matmul(proj_coeffs.float(), null_basis.float())         # [D]
+        # Ensure direction_flat and null_proj are float for subtraction
+        direction_proj = direction_flat.float() - null_proj.float()
+        # Re-normalize
+        direction_proj = direction_proj / (direction_proj.norm() + eps)
+        direction_proj = direction_proj.view(original_shape)
+        return direction_proj
+        
+    
     if args.drag_prompt != "":
-        grad_global = cal_global_grad(invert_code, text_embeddings, t, model, args)  # shape: (1, 4, H, W)
+        if use_naive:
+            grad_global = cal_global_grad(invert_code, text_embeddings, t, model, args)  # shape: (1, 4, H, W) 
+        elif use_jacobian:
+            print(f"run clip loss jacobian")
+            clip_semantic_direction = get_clip_semantic_direction(invert_code, t, model, args, clip_model)
+        elif use_locoedit:
+            print(f"run clip loss locoedit")
+            grad_global = cal_global_grad(invert_code, text_embeddings, t, model, args)  # shape: (1, 4, H, W) 
+            clip_semantic_direction = get_locoedit_semantic_direction(invert_code, t, model, args, clip_model, n_jacobian_samples=10, n_null=5, jacobian_eps=1e-3, eps=1e-8)
+
 
     index_1 = torch.nonzero(mask_cp_handle) 
     O,R = get_circle(mask_cp_handle)   
@@ -315,6 +501,29 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
 
         # print(f"move_vector: {move_vector} C: {C} radio_factor: {radio_factor}  move_vectors_radio[j]: {move_vectors_radio[j]}")
 
+        if clip_semantic_direction is not None:
+            y, x = int(C[0].item()), int(C[1].item())
+
+            clip_vec = clip_semantic_direction[0, :, y, x]  # [4] per spatial location
+            # Project this to 2D if desired (same way as your old code)
+            dy = clip_vec.mean().item()
+            dx = clip_vec.std().item()
+            clip_motion_vector = torch.tensor([dy, dx], device=move_vector.device)
+
+            # Fuse via cosine-aware weighting like CLIPDrag
+            cos_sim = torch.nn.functional.cosine_similarity(
+                move_vector.unsqueeze(0), clip_motion_vector.unsqueeze(0)
+            )
+            alpha = args.fuse_coef  # similar to pro_lambda
+
+            # print(f"move vector before fusion: {move_vector}  clip_motion_vector: {clip_motion_vector}  cos_sim: {cos_sim} alpha: {alpha}")
+
+            if cos_sim >= 0:
+                move_vector = move_vector + alpha * (1 - cos_sim ** 2).sqrt() * clip_motion_vector
+            else:
+                move_vector = move_vector + alpha * cos_sim * clip_motion_vector
+            
+
         point_new = torch.round(C+move_vector)
 
         # for draw arrow chart
@@ -363,9 +572,10 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
     )
 
     if fill_mode == "interpolation":
-        invert_code_d = interpolation(invert_code_d)
+        #invert_code_d = interpolation(invert_code_d)
+        invert_code_d = interpolate_latent_bnn(invert_code_d)
         print(f"invert_code_d shape: {invert_code_d.shape}")
-        print(f"grad_global shape: {grad_global.shape}")
+        #print(f"grad_global shape: {grad_global.shape}")
 
         # visualize_grad_global(grad_global, invert_code_d)
 

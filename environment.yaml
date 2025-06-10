@@ -1,4 +1,4 @@
-name: dragresearch
+name: research
 channels:
   - pytorch
   - defaults

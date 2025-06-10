@@ -62,6 +62,8 @@ if __name__ == '__main__':
     parser.add_argument('--guidance_scale', type=float, default=1.0, help='guidance scale')
     parser.add_argument('--clip_loss_coef', type=float, default=0.7, help='clip loss coefficient')
     parser.add_argument('--fuse_coef', type=float, default=100, help='fuse coefficient')
+    parser.add_argument('--projection_method', type=str, default='jacobian', help='projection method')
+
 
     args = parser.parse_args()
 
@@ -79,8 +81,9 @@ if __name__ == '__main__':
     ]
 
     # assume root_dir and lora_dir are valid directory
-    root_dir = './drag_bench_data'
+    root_dir = './drag_bench_data_gen'
     lora_dir = './drag_bench_lora'
+    projection_method = args.projection_method
     if args.result_dir == None:
         if len(all_category) > 1:
             result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
@@ -89,7 +92,8 @@ if __name__ == '__main__':
             '_' + str(args.latent_lr) + \
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
-            '_' + str(args.fuse_coef)
+            '_' + str(args.fuse_coef) + \
+            '_' + str(projection_method)
         else:
             result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
             '_' + str(args.lora_steps) + \
@@ -98,7 +102,8 @@ if __name__ == '__main__':
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
             '_' + str(args.fuse_coef) + \
-            '_' + "animals"
+            '_' + "animals" + \
+            '_' + str(projection_method)
     else:
         result_dir = args.result_dir+ \
             '_' + str(args.lora_steps) + \
@@ -106,7 +111,8 @@ if __name__ == '__main__':
             '_' + str(args.latent_lr) + \
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
-            '_' + str(args.fuse_coef)
+            '_' + str(args.fuse_coef) + \
+            '_' + str(projection_method)
         
 
     # mkdir if necessary
@@ -159,6 +165,7 @@ if __name__ == '__main__':
                                 guidance_scale = args.guidance_scale,
                                 clip_loss_coef = args.clip_loss_coef,
                                 fuse_coef = args.fuse_coef,
+                                projection_mode = args.projection_method,
                                 use_kv_cp="default",
                                 use_lora_ = "default",
                                 testif=1,

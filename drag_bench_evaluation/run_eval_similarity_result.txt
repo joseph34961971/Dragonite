@@ -115,3 +115,75 @@ avg 1-lpips: 0.8590707537877124
 avg clip sim: 0.96337890625
 
 
+***************
+***************
+2025-06-01 00:55:45
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_jacobian:  
+avg lpips: 0.15173513802086436
+avg 1-lpips: 0.8482648619791356
+avg clip sim: 0.9580078125
+
+
+***************
+***************
+2025-06-01 17:33:06
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_jacobian:  
+avg lpips: 0.14156825936785558
+avg 1-lpips: 0.8584317406321444
+avg clip sim: 0.962890625
+
+
+***************
+***************
+2025-06-01 18:03:02
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1.0_jacobian:  
+avg lpips: 0.14094215927690995
+avg 1-lpips: 0.85905784072309
+avg clip sim: 0.96337890625
+
+
+***************
+***************
+2025-06-05 14:39:51
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_jacobian:  
+avg lpips: 0.15139903349847328
+avg 1-lpips: 0.8486009665015267
+avg clip sim: 0.95849609375
+
+
+***************
+***************
+2025-06-07 20:13:48
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_LOCOEdit:  
+avg lpips: 0.1521609160958267
+avg 1-lpips: 0.8478390839041733
+avg clip sim: 0.95849609375
+
+
+***************
+***************
+2025-06-07 22:40:12
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_LOCOEdit:  
+avg lpips: 0.1423308163517859
+avg 1-lpips: 0.8576691836482141
+avg clip sim: 0.9619140625
+
+
+***************
+***************
+2025-06-08 02:20:51
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1.0_LOCOEdit:  
+avg lpips: 0.14094433142099438
+avg 1-lpips: 0.8590556685790056
+avg clip sim: 0.962890625
+
+
+***************
+***************
+2025-06-08 17:03:43
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_0.5_LOCOEdit:  
+avg lpips: 0.1408082160280972
+avg 1-lpips: 0.8591917839719028
+avg clip sim: 0.96337890625
+
+

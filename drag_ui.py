@@ -119,6 +119,14 @@ with gr.Blocks() as demo:
                     choices=["default",
                     "stabilityai/sd-vae-ft-mse"] + local_models_choice
                 )
+            with gr.Row():
+                guidance_scale = gr.Number(value=1.0, label="Guidance Scale", precision=1)
+                clip_loss_coef = gr.Number(value=0.7, label="Clip Loss Coef", precision=2)
+                fuse_coef = gr.Number(value=100, label="Fuse Coef", precision=2)
+                projection_mode = gr.Dropdown(value="Naive",
+                    label="Projection Mode",
+                    choices=["Naive", "Jacobian", "LOCOEdit"]
+                )
 
         with gr.Tab("LoRA Parameters"):
             with gr.Row():
@@ -225,6 +233,14 @@ with gr.Blocks() as demo:
                     choices=["default",
                     "stabilityai/sd-vae-ft-mse"] + local_models_choice
                 )
+            with gr.Row():
+                guidance_scale_om = gr.Number(value=7.5, label="Guidance Scale", precision=1)
+                clip_loss_coef_om = gr.Number(value=0.7, label="Clip Loss Coef", precision=2)
+                fuse_coef_om = gr.Number(value=5.0, label="Fuse Coef", precision=2)
+                projection_mode_om = gr.Dropdown(value="Naive",
+                    label="Projection Mode",
+                    choices=["Naive", "Jacobian"]
+                )
 
         with gr.Tab("LoRA Parameters"):
             with gr.Row():
@@ -281,6 +297,10 @@ with gr.Blocks() as demo:
         n_inference_step,
         task_cat,
         fill_mode,
+        guidance_scale,
+        clip_loss_coef,
+        fuse_coef,
+        projection_mode,
         use_kv_cp,
         use_lora_,
         lcm_model_path,
@@ -357,6 +377,10 @@ with gr.Blocks() as demo:
         use_lora__om,
         lcm_model_path_om,
         mask_fill,
+        guidance_scale_om,
+        clip_loss_coef_om,
+        fuse_coef_om,
+        projection_mode_om,
         ],
         [output_image_om]
     )
