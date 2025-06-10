@@ -176,6 +176,7 @@ cython_debug/
 local_pretrained_models/
 drag_bench_evaluation/drag_bench_data/
 drag_bench_evaluation/drag_bench_data_gen/
+drag_bench_evaluation/drag_bench_data_gen_backup/
 drag_bench_evaluation/drag_bench_lora/
 drag_bench_evaluation/results/
 ui_drag_results/
