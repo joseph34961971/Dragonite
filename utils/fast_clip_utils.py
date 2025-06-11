@@ -191,6 +191,99 @@ def interpolate_latent_bnn(latent: torch.Tensor):
                     changed = True               # note that we made a change in this iteration
     return latent
 
+
+def interpolation_mean_adjusted(x):
+    """
+    Mean-adjusted interpolation using NIN (Normalization to Interpolated Norms)
+    and channel-wise mean adjustment (nin/chm) for diffusion latents.
+
+    Args:
+        x (torch.Tensor): Input tensor of shape (1, C, N, M), where nulls (holes)
+                          are marked by zeros in channel 0.
+
+    Returns:
+        torch.Tensor: Filled tensor with consistent norm and mean-adjusted values.
+    """
+    assert x.dim() == 4, "Input tensor x should have shape (1, C, N, M)"
+    batch_size, channels, N, M = x.shape 
+    x = x.clone().float()
+    eps = 1e-8
+
+    for b in range(batch_size):
+        zero_positions = (x[b, 0] == 0)  # (N, M)
+
+        # --- Step 1: Compute channel-wise mean over non-zero positions ---
+        channel_means = []
+        for c in range(channels):
+            known_vals = x[b, c][~zero_positions]
+            mean_c = known_vals.mean() if known_vals.numel() > 0 else 0.0
+            channel_means.append(mean_c)
+            x[b, c][~zero_positions] -= mean_c
+        channel_means = torch.tensor(channel_means, device=x.device).view(channels, 1, 1)
+
+        # --- Step 2: Interpolate each zero-position using NIN with channel-wise mean adjustment ---
+        for i in range(N):
+            for j in range(M):
+                if zero_positions[i, j]:
+                    values = []
+                    weights = []
+
+                    # search LEFT
+                    for k in range(1, j + 1):
+                        jj = j - k
+                        if x[b, 0, i, jj] != 0:
+                            values.append(x[b, :, i, jj])
+                            weights.append(1 / k)
+                            break
+
+                    # search RIGHT
+                    for k in range(1, M - j):
+                        jj = j + k
+                        if x[b, 0, i, jj] != 0:
+                            values.append(x[b, :, i, jj])
+                            weights.append(1 / k)
+                            break
+
+                    # search UP
+                    for k in range(1, i + 1):
+                        ii = i - k
+                        if x[b, 0, ii, j] != 0:
+                            values.append(x[b, :, ii, j])
+                            weights.append(1 / k)
+                            break
+
+                    # search DOWN
+                    for k in range(1, N - i):
+                        ii = i + k
+                        if x[b, 0, ii, j] != 0:
+                            values.append(x[b, :, ii, j])
+                            weights.append(1 / k)
+                            break
+
+                    if weights:
+                        total_weight = sum(weights)
+                        weights_tensor = torch.tensor(weights, dtype=x.dtype, device=x.device)
+                        values_tensor = torch.stack(values, dim=0)
+
+                        # Linear interpolation
+                        interpolated_value = (weights_tensor.view(-1, 1) * values_tensor).sum(dim=0) / total_weight
+
+                        # --- NIN scaling ---
+                        neighbor_norms = values_tensor.norm(p=2, dim=1)
+                        target_norm = (weights_tensor * neighbor_norms).sum() / total_weight
+                        current_norm = interpolated_value.norm(p=2)
+
+                        if current_norm > eps:
+                            interpolated_value *= (target_norm / (current_norm + eps))
+
+                        x[b, :, i, j] = interpolated_value
+
+        # --- Step 3: Add back channel-wise means ---
+        x[b] += channel_means
+
+    return x
+
+
 def get_circle(mask: torch.Tensor):
     rect, left_top, left_bottom, right_top, right_bottom = get_rectangle(mask=mask)
     center = torch.Tensor(((left_top[0] + right_bottom[0]) / 2, (left_top[1] + right_bottom[1]) / 2)).to(device=mask.device)  # y,x
@@ -573,8 +666,11 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
 
     if fill_mode == "interpolation":
         #invert_code_d = interpolation(invert_code_d)
-        invert_code_d = interpolate_latent_bnn(invert_code_d)
         print(f"invert_code_d shape: {invert_code_d.shape}")
+        print(f"invert_code_d dtype: {invert_code_d.dtype}")
+        invert_code_d = interpolation_mean_adjusted(invert_code_d)
+        print(f"invert_code_d shape: {invert_code_d.shape}")
+        print(f"invert_code_d dtype: {invert_code_d.dtype}")
         #print(f"grad_global shape: {grad_global.shape}")
 
         # visualize_grad_global(grad_global, invert_code_d)

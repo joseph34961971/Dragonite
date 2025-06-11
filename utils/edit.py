@@ -601,6 +601,140 @@ class EditStableDiffusion(object):
         )[0]
         return prompt_embeds
     
+
+    @torch.no_grad()
+    def get_semantic_direction(
+            self, op, block_idx, vis_num, mask_index = 0, vis_num_pc=1, vis_vT=False, pca_rank=50, edit_prompt=None, null_space_projection = False, pca_rank_null=50, mask = None
+        ):
+        print(f'current experiment : op : {op}, block_idx : {block_idx}, vis_num : {vis_num}, vis_num_pc : {vis_num_pc}, pca_rank : {pca_rank}, edit_prompt : {edit_prompt}, null_space_projection = {null_space_projection}, pca_rank_null={pca_rank_null}')
+        '''
+        1. z0 -> zT -> zt -> z0 ; we edit latent variable zt
+        2. get local basis of h-space (u) and x-space (v) by using the power method
+        3. edit sample with x-space guidance
+        '''
+        #import pdb; pdb.set_trace()
+
+        # set edit prompt
+        if edit_prompt is not None:
+            self.edit_prompt = edit_prompt
+            self.edit_prompt_emb = self._get_prompt_emb(self.edit_prompt)
+
+        # set edit_t
+        self.scheduler.set_timesteps(self.for_steps)
+
+        # get latent code (zT -> zt)
+        if self.dataset_name == 'Random':
+            zT = torch.randn(1, 4, 64, 64, dtype=self.dtype, device=self.device)
+        
+        self.EXP_NAME = "original"
+        if (not os.path.exists(os.path.join(self.result_folder, "original.png"))) or (not os.path.exists(os.path.join(self.result_folder, "mask/mask.pt"))):
+            print("Generating images and creating masks......")
+            _, x0 = self.DDIMforwardsteps(zT, t_start_idx=0, t_end_idx=-1, 
+                                          for_prompt_emb=self.for_prompt_emb, 
+                                          edit_prompt_emb=self.edit_prompt_emb, 
+                                          null_prompt_emb=self.null_prompt_emb,
+                                          mode="null+(for-null)")
+            masks = self.sam.mask_segmentation(Image.fromarray(np.array(x0[0].detach().cpu())), resolution=512)
+
+        else:
+            print("Loading masks......")
+            masks = torch.load(os.path.join(self.result_folder, "mask/mask.pt"))
+        
+        if self.sampling_mode:
+            return None
+        mask = masks[mask_index].squeeze(dim=0).repeat(3, 1, 1)
+        
+        zt, t, t_idx = self.DDIMforwardsteps(zT, t_start_idx=0, t_end_idx=self.edit_t_idx, 
+                                            for_prompt_emb=self.for_prompt_emb, 
+                                            edit_prompt_emb=self.edit_prompt_emb, 
+                                            null_prompt_emb=self.null_prompt_emb,
+                                            mode="null+(for-null)")
+        assert t_idx == self.edit_t_idx
+
+
+
+        # get local basis
+        if not self.use_sega:        
+            save_dir = os.path.join(self.result_folder, "basis", f'local_basis-{self.edit_t}T-"{self.edit_prompt}"-pca-rank-{pca_rank}-select-mask{mask_index}')
+            os.makedirs(save_dir, exist_ok=True)
+            u_modify_path = os.path.join(save_dir, f'u-modify.pt')
+            vT_modify_path = os.path.join(save_dir, f'vT-modify.pt')
+            u_null_path = os.path.join(save_dir, f'u-null-null_space_rank_{pca_rank_null}.pt')
+            vT_null_path = os.path.join(save_dir, f'vT-null-null_space_rank_{pca_rank_null}.pt')        
+            # load pre-computed local basis
+            if os.path.exists(u_modify_path) and os.path.exists(vT_modify_path) and os.path.exists(u_null_path) and os.path.exists(vT_null_path):
+                u_modify = torch.load(u_modify_path, map_location=self.device).type(self.dtype)
+                vT_modify = torch.load(vT_modify_path, map_location=self.device).type(self.dtype)
+                u_null = torch.load(u_null_path, map_location=self.device).type(self.dtype)
+                vT_null = torch.load(vT_null_path, map_location=self.device).type(self.dtype)
+
+            else:
+                print('!!!RUN LOCAL PULLBACK!!!')
+                zt = zt.to(device=self.device, dtype=self.dtype)
+
+                vT_modify = self.get_delta_zt_via_grad(zt, t, t_idx, self.for_prompt_emb, self.edit_prompt_emb, self.null_prompt_emb, mask = mask, mode = self.tilda_v_score_type)
+
+                torch.save(vT_modify, vT_modify_path)
+
+                if null_space_projection:
+                    u_null, s_null, vT_null = self.local_encoder_decoder_pullback_zt(
+                    zt, t, t_idx, self.for_prompt_emb, self.edit_prompt_emb, self.null_prompt_emb, op=op, block_idx=block_idx,
+                    pca_rank=pca_rank_null, chunk_size=5, min_iter=10, max_iter=50, convergence_threshold=1e-3, mask = ~mask, mode="null+(for-null)",
+                    )
+                    
+                    torch.save(u_null, u_null_path)
+                    torch.save(vT_null, vT_null_path)
+
+            # normalize u, vT
+            if not null_space_projection:
+                vT = vT_modify / vT_modify.norm(dim=1, keepdim=True)
+            else:
+                vT_null = vT_null[:pca_rank_null, :]
+                vT = (vT_null.T @ (vT_null @ vT_modify.T)).T
+                vT = vT_modify - vT
+                vT = vT / vT.norm(dim=1, keepdim=True)
+
+            original_zt = zt.clone()
+            for pc_idx in range(vis_num_pc):
+                zts = {
+                    -1: None,
+                    1: None,
+                }
+                self.EXP_NAME = f'Edit_zt-edit_{self.edit_t}T-{op}-block_{block_idx}-pc_{pc_idx:0=3d}_pos-edit_prompt-{self.edit_prompt}_select_mask{mask_index}_null_space_projection_{null_space_projection}_null_space_rank_{pca_rank_null}_{self.tilda_v_score_type}'      
+                for direction in [1, -1]:
+                    vk = direction*vT[pc_idx, :].view(-1, *zT.shape[1:])
+                    # edit zt along vk direction with **x-space guidance**
+                    zt_list = [original_zt.clone()]
+                    for _ in tqdm(range(self.x_space_guidance_num_step), desc='x_space_guidance edit'):
+                        zt_edit = self.x_space_guidance_direct(
+                            zt_list[-1], t_idx=self.edit_t_idx, vk=vk, 
+                            single_edit_step=self.x_space_guidance_edit_step,
+                        )
+                        zt_list.append(zt_edit)
+                    zt = torch.cat(zt_list, dim=0)
+                    if vis_num == 1:
+                        zt = zt[[0,-1],:]
+                    else:
+                        zt = zt[::(zt.size(0) // vis_num)]
+                    zts[direction] = zt
+                    # zt -> z0
+                zt = torch.cat([(zts[-1].flip(dims=[0]))[:-1], zts[1]], dim=0)
+
+            self.DDIMforwardsteps(
+                zt, t_start_idx=self.edit_t_idx, t_end_idx=-1, 
+                for_prompt_emb=self.for_prompt_emb, 
+                edit_prompt_emb=self.edit_prompt_emb, 
+                null_prompt_emb=self.null_prompt_emb,
+                mode="null+(for-null)")
+        else:
+            self.EXP_NAME = f'sega-edit_prompt-{self.edit_prompt}'
+            self.DDIMforwardsteps(
+                zt, t_start_idx=self.edit_t_idx, t_end_idx=-1, 
+                for_prompt_emb=self.for_prompt_emb, 
+                edit_prompt_emb=self.edit_prompt_emb, 
+                null_prompt_emb=self.null_prompt_emb,
+                mode="null+(for-null)+(edit-null)")
+            
     @torch.no_grad()
     def project_clip_grad_into_semantic_subspace(
         self,

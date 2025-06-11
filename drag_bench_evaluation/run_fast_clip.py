@@ -140,7 +140,7 @@ if __name__ == '__main__':
             prompt = meta_data['prompt']
             mask = meta_data['mask']
             points = meta_data['points']
-            drag_prompt = meta_data['drag_prompt']
+            #drag_prompt = meta_data['drag_prompt']
 
             # load lora
             lora_path = os.path.join(lora_dir, cat, sample_name, str(args.lora_steps))

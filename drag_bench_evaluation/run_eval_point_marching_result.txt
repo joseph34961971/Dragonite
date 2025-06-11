@@ -180,3 +180,38 @@ results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_0.5_LOCOEdit:
 mean distance: 35.341243743896484
 
 
+***************
+***************
+2025-06-10 16:33:16
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1.0_LOCOEdit:  
+mean distance: 35.81837844848633
+
+
+***************
+***************
+2025-06-10 18:21:10
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1.0_LOCOEdit:  
+mean distance: 35.25142288208008
+
+
+***************
+***************
+2025-06-10 20:21:13
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_1.0_Naive:  
+mean distance: 35.394744873046875
+
+
+***************
+***************
+2025-06-10 21:20:53
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_Naive:  
+mean distance: 34.857635498046875
+
+
+***************
+***************
+2025-06-10 22:28:30
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_Naive:  
+mean distance: 33.76746368408203
+
+

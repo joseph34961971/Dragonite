@@ -132,6 +132,7 @@ def override_forward(self):
 
         # 2. pre-process
         # print('sample.dtype 0 ',sample.dtype)
+        sample = sample.to(self.dtype)
         sample = self.conv_in(sample)
         # print('sample.dtype 0 ',sample.dtype)
 
