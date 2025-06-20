@@ -288,3 +288,73 @@ use drag time sum: 1400.3878262043
 use drag time per point: 4.01257256792063
 
 
+***************
+***************
+2025-06-13 21:15:59
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian:  
+use time sum: 1356.954576253891 
+use save time sum: 12.252302169799805 
+use drag time sum: 1344.7022740840912 
+use drag time per point: 3.8530151119888
+
+
+***************
+***************
+2025-06-13 23:54:00
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_LOCOEdit:  
+use time sum: 2721.5660638809204 
+use save time sum: 12.276544094085693 
+use drag time sum: 2709.2895197868347 
+use drag time per point: 7.763007220019584
+
+
+***************
+***************
+2025-06-14 16:33:31
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Naive:  
+use time sum: 1402.0857002735138 
+use save time sum: 12.337247371673584 
+use drag time sum: 1389.7484529018402 
+use drag time per point: 3.982087257598396
+
+
+***************
+***************
+2025-06-14 17:23:46
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian:  
+use time sum: 1382.4569013118744 
+use save time sum: 12.274818658828735 
+use drag time sum: 1370.1820826530457 
+use drag time per point: 3.926023159464314
+
+
+***************
+***************
+2025-06-17 02:32:27
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian:  
+use time sum: 2872.468517780304 
+use save time sum: 12.096189260482788 
+use drag time sum: 2860.372328519821 
+use drag time per point: 8.195909250773127
+
+
+***************
+***************
+2025-06-17 03:04:33
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian:  
+use time sum: 1415.9681687355042 
+use save time sum: 12.22607707977295 
+use drag time sum: 1403.7420916557312 
+use drag time per point: 4.0221836437126965
+
+
+***************
+***************
+2025-06-17 03:51:23
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-17 03:27:52:  
+use time sum: 1410.2979533672333 
+use save time sum: 12.202695846557617 
+use drag time sum: 1398.0952575206757 
+use drag time per point: 4.006003603211105
+
+

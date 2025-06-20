@@ -388,4 +388,3 @@ def drag_diffusion_update_gen(model,
         optimizer.zero_grad()
 
     return init_code
-

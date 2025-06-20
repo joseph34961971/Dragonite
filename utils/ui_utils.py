@@ -440,6 +440,8 @@ def run_drag(source_image,
 
     # obtain text embeddings
     text_embeddings = model.get_text_embeddings(prompt)
+    drag_text_embeddings = model.get_text_embeddings(drag_prompt)
+    print(f"this is drag_prompt: {drag_prompt}")
     # if text_embeddings is None:
     #     print("text_embeddings is none")
 
@@ -480,6 +482,7 @@ def run_drag(source_image,
     if use_fast_clip:
         print("******use fast clip*******")
         t = model.scheduler.timesteps[args.n_inference_step - args.n_actual_inference_step]
+        #t_idx = args.n_inference_step - args.n_actual_inference_step
         # print("******use fast clip*******")
         invert_code, grad_global = drag_stretch_with_clip_grad(model=model,
                                     invert_code=invert_code,
@@ -505,6 +508,10 @@ def run_drag(source_image,
     # update according to the given supervision
     init_code = init_code.float()
     text_embeddings = text_embeddings.float()
+    drag_text_embeddings = drag_text_embeddings.float()
+    print("this is type:")
+    print(type(text_embeddings))
+    print(type(drag_text_embeddings))
     model.unet = model.unet.float()
     if use_dragdiff:
         updated_init_code = drag_diffusion_update(model, init_code,
@@ -512,6 +519,7 @@ def run_drag(source_image,
             use_kv_copy=use_kv_copy)
         updated_init_code = updated_init_code.half()
     text_embeddings = text_embeddings.half()
+    drag_text_embeddings = drag_text_embeddings.half()
     model.unet = model.unet.half()
 
     # empty cache to save memory
@@ -540,7 +548,7 @@ def run_drag(source_image,
         # print('sample from latent directly')
         gen_image = model(
             prompt=args.prompt,
-            text_embeddings=torch.cat([text_embeddings, text_embeddings], dim=0),
+            text_embeddings=torch.cat([text_embeddings, drag_text_embeddings], dim=0), ### concat original text embeddings and drag prompt embeddings
             batch_size=2,
             latents=torch.cat([invert_code, invert_code], dim=0),
             guidance_scale=args.guidance_scale,

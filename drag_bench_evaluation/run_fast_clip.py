@@ -114,6 +114,7 @@ if __name__ == '__main__':
             '_' + str(args.fuse_coef) + \
             '_' + str(projection_method)
         
+    result_dir += f"{time.strftime('%Y-%m-%d_%H:%M:%S',time.localtime())}"
 
     # mkdir if necessary
     if not os.path.isdir(result_dir):
@@ -140,7 +141,7 @@ if __name__ == '__main__':
             prompt = meta_data['prompt']
             mask = meta_data['mask']
             points = meta_data['points']
-            #drag_prompt = meta_data['drag_prompt']
+            drag_prompt = meta_data['drag_prompt']
 
             # load lora
             lora_path = os.path.join(lora_dir, cat, sample_name, str(args.lora_steps))
@@ -151,7 +152,7 @@ if __name__ == '__main__':
                                 image_with_clicks,
                                 mask,
                                 prompt,
-                                prompt,
+                                drag_prompt,
                                 points,
                                 inversion_strength = args.inv_strength,
                                 model_path='runwayml/stable-diffusion-v1-5',

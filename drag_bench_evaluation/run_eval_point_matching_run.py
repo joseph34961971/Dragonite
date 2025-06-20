@@ -54,7 +54,7 @@ if __name__ == '__main__':
         'other_objects',
     ]
 
-    original_img_root = './drag_bench_data'
+    original_img_root = './drag_bench_data_gen'
 
     for target_root in args.eval_root:
         # fixing the seed for semantic correspondence
@@ -68,7 +68,7 @@ if __name__ == '__main__':
                 with open(os.path.join(original_img_root, cat, file_name, 'meta_data.pkl'), 'rb') as f:
                     meta_data = pickle.load(f)
                 # prompt = meta_data['prompt']
-                prompt = meta_data['prompt']
+                prompt = meta_data['drag_prompt']
                 points = meta_data['points']
 
                 # here, the point is in x,y coordinate

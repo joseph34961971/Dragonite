@@ -19,6 +19,8 @@ import numpy as np
 
 import matplotlib.pyplot as plt
 import numpy as np
+# from .temp import EditStableDiffusion, unsupervised_loco_edit
+
 
 # from .edit import EditStableDiffusion
 # from utils.define_argparser import parse_args, preset
@@ -60,136 +62,6 @@ def get_rectangle(mask: torch.Tensor):
     right_bottom = torch.Tensor((max_y, max_x)).to(device=mask.device)
     rect = torch.stack((left_top, left_bottom, right_top, right_bottom),dim=0).to(device=mask.device)
     return rect, left_top, left_bottom, right_top, right_bottom
-    
-def interpolation(x):
-    assert x.dim() == 4, "Input tensor x should have shape (1, C, N, M)"
-    batch_size, channels, N, M = x.shape 
-
-    for b in range(batch_size):
-        zero_positions = (x[b, 0] == 0)
-
-        for i in range(N):
-            for j in range(M):
-                if zero_positions[i, j]:
-                    values = []  
-                    weights = [] 
-
-                    for k in range(1, j + 1):
-                        if j - k >= 0 and x[b, 0, i, j - k] != 0:
-                            values.append(x[b, :, i, j - k])
-                            weights.append(1 / k)
-                            break
-
-                    for k in range(1, M - j):
-                        if j + k < M and x[b, 0, i, j + k] != 0:
-                            values.append(x[b, :, i, j + k])
-                            weights.append(1 / k)
-                            break
-
-                    for k in range(1, i + 1):
-                        if i - k >= 0 and x[b, 0, i - k, j] != 0:
-                            values.append(x[b, :, i - k, j])
-                            weights.append(1 / k)
-                            break
-
-                    for k in range(1, N - i):
-                        if i + k < N and x[b, 0, i + k, j] != 0:
-                            values.append(x[b, :, i + k, j])
-                            weights.append(1 / k)
-                            break
-
-                    if weights:
-                        total_weight = sum(weights)
-                        interpolated_value = sum(w * v for w, v in zip(weights, values)) / total_weight
-                        x[b, :, i, j] = interpolated_value
-
-    return x
-
-def interpolate_latent_bnn(latent: torch.Tensor):
-    """
-    Fill null (zero) regions in a diffusion latent tensor using bilateral nearest-neighbor interpolation,
-    and normalize each newly interpolated vector by its L2 norm across channels.
-    """
-    assert latent.ndim == 4, "Expected tensor of shape (1, C, N, M)"
-    B, C, H, W = latent.shape  # B=1 in our case
-    eps = 1e-8  # small constant to avoid division-by-zero
-    
-    # Identify null pixels (all channels == 0). Create a mask of shape (H, W) where True indicates a null location.
-    null_mask = (latent == 0).all(dim=1, keepdim=False)  # shape (B, H, W), with B=1
-    
-    # Continue interpolation until no null pixels remain or no change occurs
-    changed = True
-    while changed:
-        changed = False
-        # Loop through each spatial location
-        for i in range(H):
-            for j in range(W):
-                if null_mask[0, i, j]:  # only process if this pixel is currently null
-                    # Find nearest non-null neighbor to the left and right (same row)
-                    left_val = None
-                    right_val = None
-                    for jj in range(j-1, -1, -1):  # search left
-                        if not null_mask[0, i, jj]:
-                            left_val = latent[0, :, i, jj]
-                            break
-                    for jj in range(j+1, W):  # search right
-                        if not null_mask[0, i, jj]:
-                            right_val = latent[0, :, i, jj]
-                            break
-                    # Interpolate horizontally if possible
-                    if left_val is not None and right_val is not None:
-                        horiz_val = 0.5 * (left_val + right_val)
-                    elif left_val is not None:
-                        horiz_val = left_val.clone()  # only left neighbor available
-                    elif right_val is not None:
-                        horiz_val = right_val.clone()  # only right neighbor available
-                    else:
-                        horiz_val = None
-                    
-                    # Find nearest non-null neighbor above and below (same column)
-                    top_val = None
-                    bottom_val = None
-                    for ii in range(i-1, -1, -1):  # search up
-                        if not null_mask[0, ii, j]:
-                            top_val = latent[0, :, ii, j]
-                            break
-                    for ii in range(i+1, H):  # search down
-                        if not null_mask[0, ii, j]:
-                            bottom_val = latent[0, :, ii, j]
-                            break
-                    # Interpolate vertically if possible
-                    if top_val is not None and bottom_val is not None:
-                        vert_val = 0.5 * (top_val + bottom_val)
-                    elif top_val is not None:
-                        vert_val = top_val.clone()
-                    elif bottom_val is not None:
-                        vert_val = bottom_val.clone()
-                    else:
-                        vert_val = None
-                    
-                    # Combine horizontal and vertical interpolations:
-                    if horiz_val is not None and vert_val is not None:
-                        new_val = 0.5 * (horiz_val + vert_val)
-                    elif horiz_val is not None:
-                        new_val = horiz_val
-                    elif vert_val is not None:
-                        new_val = vert_val
-                    else:
-                        # No neighbors found in any direction (should be rare, e.g., isolated region).
-                        # Skip for now – it may be filled in a later iteration.
-                        continue
-                    
-                    # **Norm normalization step** – L2 normalize the interpolated vector across channels
-                    norm = torch.linalg.norm(new_val, ord=2)  # compute L2 norm of vector (all C channels)
-                    if norm > eps:
-                        new_val = new_val / norm  # normalize to unit length
-                    # If norm is 0 (all-zero vector), we leave it as is (or it stays zero).
-                    
-                    # Assign the normalized value back to the latent tensor
-                    latent[0, :, i, j] = new_val
-                    null_mask[0, i, j] = False   # mark this pixel as filled
-                    changed = True               # note that we made a change in this iteration
-    return latent
 
 
 def interpolation_mean_adjusted(x):
@@ -265,7 +137,7 @@ def interpolation_mean_adjusted(x):
                         weights_tensor = torch.tensor(weights, dtype=x.dtype, device=x.device)
                         values_tensor = torch.stack(values, dim=0)
 
-                        # Linear interpolation
+                        # Linear interpolation  
                         interpolated_value = (weights_tensor.view(-1, 1) * values_tensor).sum(dim=0) / total_weight
 
                         # --- NIN scaling ---
@@ -514,7 +386,6 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
         direction_proj = direction_proj / (direction_proj.norm() + eps)
         direction_proj = direction_proj.view(original_shape)
         return direction_proj
-        
     
     if args.drag_prompt != "":
         if use_naive:
@@ -615,7 +486,6 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
                 move_vector = move_vector + alpha * (1 - cos_sim ** 2).sqrt() * clip_motion_vector
             else:
                 move_vector = move_vector + alpha * cos_sim * clip_motion_vector
-            
 
         point_new = torch.round(C+move_vector)
 
