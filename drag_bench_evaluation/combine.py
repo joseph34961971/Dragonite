@@ -1,59 +1,47 @@
 import os
 from PIL import Image
 
-ori_dir = "./drag_bench_data"
-result_dir = "./results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-17_03:27:52"
+# Set directory paths
+dir1 = './dragonite_fastdrag'
+dir2 = './clipdrag_result'
+output_dir = 'dragonite_fastdrag_clipdrag'
+os.makedirs(output_dir, exist_ok=True)
 
-def combine_matching_images(ori_dir, result_dir, output_folder):
-    # Loop through all subdirectories in folder1
-    for categories in os.listdir(result_dir):
-        result_cat_dir = os.path.join(result_dir, categories)
-        ori_cat_dir = os.path.join(ori_dir, categories)
-        # print(ori_cat_dir)
-        # print(result_cat_dir)
+# Helper: Extract base timestamp key
+def extract_key(filename):
+    return filename.split('draged_image')[0] if '_user_drag' in filename else filename.split('_merged')[0]
 
-        for subfolder in os.listdir(result_cat_dir):
-            subfolder_path1 = os.path.join(ori_cat_dir, subfolder)
-            subfolder_path2 = os.path.join(result_cat_dir, subfolder)
-            # print(subfolder_path1)
-            # print(subfolder_path2)
-            print(os.path.isdir(subfolder_path1))
-            print(subfolder_path1)
-            # print(subfolder_path1)
+# Build mapping of key -> filename
+dir1_map = {extract_key(f): f for f in os.listdir(dir1) if f.endswith('.jpg')}
+dir2_map = {extract_key(f): f for f in os.listdir(dir2) if f.endswith('.png')}
 
-            if os.path.isdir(subfolder_path1) and os.path.isdir(subfolder_path2):
-                img1_path = os.path.join(subfolder_path1, "user_drag.png")
-                img2_path = os.path.join(subfolder_path2, "dragged_image.png")
-                # output_path = os.path.join(subfolder_path2, "combined_image.png")
-                print(img1_path)
-                print(img2_path)
+print(dir1_map)
+print("aaaaaaaaaaaaaaa")
+print(dir2_map)
 
-                if os.path.exists(img1_path) and os.path.exists(img2_path):
-                    print("yes")
-                    # Open and align height if needed
-                    img1 = Image.open(img1_path)
-                    img2 = Image.open(img2_path)
+# Match and process
+matched_keys = dir1_map.keys() & dir2_map.keys()
 
-                    if img1.height != img2.height:
-                        img2 = img2.resize(
-                            (int(img2.width * img1.height / img2.height), img1.height)
-                        )
+for key in matched_keys:
+    dir1_path = os.path.join(dir1, dir1_map[key])
+    dir2_path = os.path.join(dir2, dir2_map[key])
 
-                    # Create new image
-                    combined = Image.new("RGB", (img1.width + img2.width, img1.height))
-                    combined.paste(img1, (0, 0))
-                    combined.paste(img2, (img1.width, 0))
+    try:
+        img1 = Image.open(dir1_path)
+        img2 = Image.open(dir2_path)
 
-                    # Save
-                    output_path = os.path.join(output_folder, f"{subfolder}_combined.jpg")
-                    combined.save(output_path)
-                    print(f"Saved: {output_path}")
-                else:
-                    print(f"Skipped: Missing images in {subfolder}")
+        # Resize to same height
+        if img1.height != img2.height:
+            ratio = img1.height / img2.height
+            img2 = img2.resize((int(img2.width * ratio), img1.height))
 
-# Example usage
-combine_matching_images(
-    ori_dir=ori_dir,
-    result_dir=result_dir,
-    output_folder=result_dir
-)
+        # Combine side by side
+        combined_img = Image.new("RGB", (img1.width + img2.width, img1.height))
+        combined_img.paste(img1, (0, 0))
+        combined_img.paste(img2, (img1.width, 0))
+
+        # Save with shared key name
+        combined_img.save(os.path.join(output_dir, f"{key}_merged.jpg"))
+        print(f"✔️ Combined {key}")
+    except Exception as e:
+        print(f"❌ Failed for {key}: {e}")

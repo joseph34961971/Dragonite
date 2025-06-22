@@ -349,13 +349,16 @@ class DragPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt,
+        drag_prompt,
         text_embeddings=None, # whether text embedding is directly provided.
+        drag_text_embeddings=None,
         batch_size=1,
         height=512,
         width=512,
         num_inference_steps=50,
         num_actual_inference_steps=None,
         guidance_scale=7.5,
+        blending_coef=0.7,
         latents=None,
         neg_prompt=None,
         return_intermediates=False,
@@ -370,6 +373,14 @@ class DragPipeline(StableDiffusionPipeline):
                     prompt = [prompt] * batch_size
             # text embeddings
             text_embeddings = self.get_text_embeddings(prompt)
+        
+
+        # ### drag text blending
+        # if drag_text_embeddings is None:
+        #     drag_text_embeddings = self.get_text_embeddings(drag_prompt)
+
+        # if drag_text_embeddings is not None:
+        #     text_embeddings = blending_coef * text_embeddings + (1 - blending_coef) * drag_text_embeddings
 
         # define initial latents if not predefined
         if latents is None:

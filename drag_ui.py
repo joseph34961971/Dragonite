@@ -29,7 +29,7 @@ with gr.Blocks() as demo:
     # layout definition
     with gr.Row():
         gr.Markdown("""
-        # Official Implementation of [FastDrag]
+        # Official Implementation of [Dragonite]
         """)
 
     # UI components for editing real images

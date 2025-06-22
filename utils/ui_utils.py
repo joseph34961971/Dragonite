@@ -548,7 +548,9 @@ def run_drag(source_image,
         # print('sample from latent directly')
         gen_image = model(
             prompt=args.prompt,
-            text_embeddings=torch.cat([text_embeddings, drag_text_embeddings], dim=0), ### concat original text embeddings and drag prompt embeddings
+            drag_prompt=args.drag_prompt,
+            text_embeddings=torch.cat([text_embeddings, text_embeddings], dim=0), ### concat original text embeddings and drag prompt embeddings
+            drag_text_embeddings=torch.cat([drag_text_embeddings, drag_text_embeddings], dim=0),
             batch_size=2,
             latents=torch.cat([invert_code, invert_code], dim=0),
             guidance_scale=args.guidance_scale,

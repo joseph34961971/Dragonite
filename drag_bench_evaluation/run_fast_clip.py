@@ -162,7 +162,7 @@ if __name__ == '__main__':
                                 start_layer=10,
                                 n_inference_step=args.n_inference_step,
                                 task_cat="fast clip",
-                                fill_mode='interpolation',
+                                fill_mode='ori',
                                 guidance_scale = args.guidance_scale,
                                 clip_loss_coef = args.clip_loss_coef,
                                 fuse_coef = args.fuse_coef,
