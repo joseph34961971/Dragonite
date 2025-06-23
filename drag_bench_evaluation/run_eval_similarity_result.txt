@@ -421,3 +421,39 @@ avg 1-lpips: 0.8736189659775757
 avg clip sim: 0.96728515625
 
 
+***************
+***************
+2025-06-24 00:21:27
+results/fast_clip_inter_nolora_kvcopy_inverse4_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-23_23:59:52:  
+avg lpips: 0.19533128513068687
+avg 1-lpips: 0.8046687148693131
+avg clip sim: 0.93212890625
+
+
+***************
+***************
+2025-06-24 00:49:22
+results/fast_clip_inter_nolora_kvcopy_inverse6_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_00:27:14:  
+avg lpips: 0.16106536124901075
+avg 1-lpips: 0.8389346387509893
+avg clip sim: 0.951171875
+
+
+***************
+***************
+2025-06-24 01:18:04
+results/fast_clip_inter_nolora_kvcopy_inverse8_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_00:55:09:  
+avg lpips: 0.15150917099743355
+avg 1-lpips: 0.8484908290025664
+avg clip sim: 0.95751953125
+
+
+***************
+***************
+2025-06-24 01:47:12
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_01:23:51:  
+avg lpips: 0.14226268075588272
+avg 1-lpips: 0.8577373192441173
+avg clip sim: 0.96240234375
+
+

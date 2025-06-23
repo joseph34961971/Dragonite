@@ -498,3 +498,43 @@ use drag time sum: 1345.8382036685944
 use drag time per point: 3.8562699245518464
 
 
+***************
+***************
+2025-06-24 00:21:18
+results/fast_clip_inter_nolora_kvcopy_inverse4_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-23_23:59:52:  
+use time sum: 1285.9479448795319 
+use save time sum: 11.511127471923828 
+use drag time sum: 1274.436817407608 
+use drag time per point: 3.651681425236699
+
+
+***************
+***************
+2025-06-24 00:49:12
+results/fast_clip_inter_nolora_kvcopy_inverse6_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_00:27:14:  
+use time sum: 1318.3865456581116 
+use save time sum: 11.866368770599365 
+use drag time sum: 1306.5201768875122 
+use drag time per point: 3.7436108220272555
+
+
+***************
+***************
+2025-06-24 01:17:54
+results/fast_clip_inter_nolora_kvcopy_inverse8_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_00:55:09:  
+use time sum: 1365.22007894516 
+use save time sum: 11.99802565574646 
+use drag time sum: 1353.2220532894135 
+use drag time per point: 3.8774270867891505
+
+
+***************
+***************
+2025-06-24 01:47:02
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_01:23:51:  
+use time sum: 1391.1411101818085 
+use save time sum: 12.21589970588684 
+use drag time sum: 1378.9252104759216 
+use drag time per point: 3.951075101650205
+
+
