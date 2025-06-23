@@ -86,7 +86,7 @@ if __name__ == '__main__':
     projection_method = args.projection_method
     if args.result_dir == None:
         if len(all_category) > 1:
-            result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
+            result_dir = f'results/fast_clip_inter_nolora_kvcopy_inverse{args.n_inference_step}' + \
             '_' + str(args.lora_steps) + \
             '_' + str(args.inv_strength) + \
             '_' + str(args.latent_lr) + \
@@ -95,7 +95,7 @@ if __name__ == '__main__':
             '_' + str(args.fuse_coef) + \
             '_' + str(projection_method)
         else:
-            result_dir = 'results/fast_clip_inter_nolora_kvcopy_inverse10' + \
+            result_dir = f'results/fast_clip_inter_nolora_kvcopy_inverse{args.n_inference_step}' + \
             '_' + str(args.lora_steps) + \
             '_' + str(args.inv_strength) + \
             '_' + str(args.latent_lr) + \
