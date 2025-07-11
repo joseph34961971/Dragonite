@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Define the list of inference steps to iterate through
-inference_steps=(4 6 8 10 12 20 30)
+inference_steps=(14)
 
 # Loop over each inference step value
 for step in "${inference_steps[@]}"; do

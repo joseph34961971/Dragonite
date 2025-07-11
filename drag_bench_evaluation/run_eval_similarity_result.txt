@@ -457,3 +457,147 @@ avg 1-lpips: 0.8577373192441173
 avg clip sim: 0.96240234375
 
 
+***************
+***************
+2025-06-24 02:17:03
+results/fast_clip_inter_nolora_kvcopy_inverse12_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_01:52:59:  
+avg lpips: 0.13613659364239472
+avg 1-lpips: 0.8638634063576053
+avg clip sim: 0.9658203125
+
+
+***************
+***************
+2025-06-24 02:48:44
+results/fast_clip_inter_nolora_kvcopy_inverse20_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_02:22:51:  
+avg lpips: 0.1303849726370195
+avg 1-lpips: 0.8696150273629805
+avg clip sim: 0.97021484375
+
+
+***************
+***************
+2025-06-24 03:23:05
+results/fast_clip_inter_nolora_kvcopy_inverse30_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_02:54:32:  
+avg lpips: 0.12640010350179381
+avg 1-lpips: 0.8735998964982061
+avg clip sim: 0.9716796875
+
+
+***************
+***************
+2025-06-24 22:12:46
+results/fast_clip_inter_nolora_kvcopy_inverse14_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_21:48:25:  
+avg lpips: 0.1346993238460727
+avg 1-lpips: 0.8653006761539273
+avg clip sim: 0.966796875
+
+
+***************
+***************
+2025-07-11 05:17:02
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_04:54:21:  
+avg lpips: 0.1264333690085062
+avg 1-lpips: 0.8735666309914938
+avg clip sim: 0.966796875
+
+
+***************
+***************
+2025-07-11 16:27:20
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_16:04:51:  
+avg lpips: 0.14470859475252104
+avg 1-lpips: 0.8552914052474789
+avg clip sim: 0.96142578125
+
+
+***************
+***************
+2025-07-11 17:10:29
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_16:47:55:  
+avg lpips: 0.14484515627164665
+avg 1-lpips: 0.8551548437283534
+avg clip sim: 0.9619140625
+
+
+***************
+***************
+2025-07-11 18:01:28
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_17:38:48:  
+avg lpips: 0.14228090036933014
+avg 1-lpips: 0.8577190996306698
+avg clip sim: 0.96240234375
+
+
+***************
+***************
+2025-07-11 18:35:45
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_18:13:20:  
+avg lpips: 0.14463951112475337
+avg 1-lpips: 0.8553604888752466
+avg clip sim: 0.96240234375
+
+
+***************
+***************
+2025-07-11 20:32:01
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_20:09:16:  
+avg lpips: 0.1445898600058948
+avg 1-lpips: 0.8554101399941052
+avg clip sim: 0.96240234375
+
+
+***************
+***************
+2025-07-11 22:20:58
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_21:58:12:  
+avg lpips: 0.14449538897450379
+avg 1-lpips: 0.8555046110254962
+avg clip sim: 0.96240234375
+
+
+***************
+***************
+2025-07-11 23:21:32
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_22:58:28:  
+avg lpips: 0.14117051073145576
+avg 1-lpips: 0.8588294892685442
+avg clip sim: 0.962890625
+
+
+***************
+***************
+2025-07-12 00:30:15
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_00:07:22:  
+avg lpips: 0.14130524861194738
+avg 1-lpips: 0.8586947513880526
+avg clip sim: 0.962890625
+
+
+***************
+***************
+2025-07-12 01:14:46
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_00:51:50:  
+avg lpips: 0.14227663120482026
+avg 1-lpips: 0.8577233687951797
+avg clip sim: 0.96240234375
+
+
+***************
+***************
+2025-07-12 02:20:11
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_01:57:14:  
+avg lpips: 0.14182655570528857
+avg 1-lpips: 0.8581734442947114
+avg clip sim: 0.962890625
+
+
+***************
+***************
+2025-07-12 02:51:10
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_02:28:27:  
+avg lpips: 0.14469171542583442
+avg 1-lpips: 0.8553082845741655
+avg clip sim: 0.9619140625
+
+

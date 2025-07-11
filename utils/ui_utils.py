@@ -257,7 +257,7 @@ def run_drag(source_image,
     use_lcm_unet=True
     use_lcm_lora_sdv15=False
     if use_lcm_unet:
-        # print('use lcm unet')
+        print('use lcm unet')
         unet = UNet2DConditionModel.from_pretrained(
                     lcm_model_path,
                     subfolder="unet",
@@ -527,10 +527,14 @@ def run_drag(source_image,
 
     # hijack the attention module
     # inject the reference branch to guide the generation
-    editor = MutualSelfAttentionControl(start_step=start_step,
-                                        start_layer=start_layer,
-                                        total_steps=args.n_inference_step,
-                                        guidance_scale=args.guidance_scale)
+
+    ######### For testing, rememnber to change back to MutualSelfAttentionControl
+    # editor = MutualSelfAttentionControl(start_step=start_step,
+    #                                     start_layer=start_layer,
+    #                                     total_steps=args.n_inference_step,
+    #                                     guidance_scale=args.guidance_scale)
+
+    editor = None
     
     # it is to do the dragdiffusion Reference-Latent-Control (rlc)
     # but it is not need in fastdrag

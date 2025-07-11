@@ -142,6 +142,7 @@ if __name__ == '__main__':
             mask = meta_data['mask']
             points = meta_data['points']
             drag_prompt = meta_data['drag_prompt']
+            #drag_prompt = ""  ####### For testing, rememnber to change back to meta_data['drag_prompt']
 
             # load lora
             lora_path = os.path.join(lora_dir, cat, sample_name, str(args.lora_steps))
@@ -162,7 +163,7 @@ if __name__ == '__main__':
                                 start_layer=10,
                                 n_inference_step=args.n_inference_step,
                                 task_cat="fast clip",
-                                fill_mode='interpolation',
+                                fill_mode='random',    ####### For testing, rememnber to change back to interpolation
                                 guidance_scale = args.guidance_scale,
                                 clip_loss_coef = args.clip_loss_coef,
                                 fuse_coef = args.fuse_coef,

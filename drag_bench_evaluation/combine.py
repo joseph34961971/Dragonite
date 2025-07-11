@@ -2,14 +2,14 @@ import os
 from PIL import Image
 
 # Set directory paths
-dir1 = './dragonite_fastdrag'
-dir2 = './clipdrag_result'
-output_dir = 'dragonite_fastdrag_clipdrag'
+dir1 = './results/dragonite_result'
+dir2 = './results/clipdrag_result'
+output_dir = './results/dragonite_clipdrag'
 os.makedirs(output_dir, exist_ok=True)
 
 # Helper: Extract base timestamp key
 def extract_key(filename):
-    return filename.split('draged_image')[0] if '_user_drag' in filename else filename.split('_merged')[0]
+    return filename.split('_combined')[0] if '_combined' in filename else filename.split('dragged_image')[0]
 
 # Build mapping of key -> filename
 dir1_map = {extract_key(f): f for f in os.listdir(dir1) if f.endswith('.jpg')}

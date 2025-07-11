@@ -383,3 +383,115 @@ results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2
 mean distance: 33.73677444458008
 
 
+***************
+***************
+2025-06-24 02:22:48
+results/fast_clip_inter_nolora_kvcopy_inverse12_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_01:52:59:  
+mean distance: 32.58303451538086
+
+
+***************
+***************
+2025-06-24 02:54:29
+results/fast_clip_inter_nolora_kvcopy_inverse20_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_02:22:51:  
+mean distance: 36.473411560058594
+
+
+***************
+***************
+2025-06-24 03:28:50
+results/fast_clip_inter_nolora_kvcopy_inverse30_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_02:54:32:  
+mean distance: 34.52235412597656
+
+
+***************
+***************
+2025-06-24 22:18:31
+results/fast_clip_inter_nolora_kvcopy_inverse14_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-24_21:48:25:  
+mean distance: 36.79029846191406
+
+
+***************
+***************
+2025-07-11 05:22:47
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_04:54:21:  
+mean distance: 39.1679801940918
+
+
+***************
+***************
+2025-07-11 16:33:04
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_16:04:51:  
+mean distance: 40.459747314453125
+
+
+***************
+***************
+2025-07-11 17:16:13
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_16:47:55:  
+mean distance: 39.73371887207031
+
+
+***************
+***************
+2025-07-11 18:07:12
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_17:38:48:  
+mean distance: 32.84626388549805
+
+
+***************
+***************
+2025-07-11 18:41:31
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_18:13:20:  
+mean distance: 39.02876281738281
+
+
+***************
+***************
+2025-07-11 20:37:45
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_20:09:16:  
+mean distance: 38.298248291015625
+
+
+***************
+***************
+2025-07-11 22:26:43
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_21:58:12:  
+mean distance: 39.37508773803711
+
+
+***************
+***************
+2025-07-11 23:27:16 Geo + MNI + LSC
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-11_22:58:28:  
+mean distance: 32.11532211303711
+
+
+***************
+***************
+2025-07-12 00:35:59 Geo + MAI no LSC
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_00:07:22:  
+mean distance: 31.673845291137695
+
+
+***************
+***************
+2025-07-12 01:20:30 Text + MAI no LSC
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_00:51:50:  
+mean distance: 34.40261459350586
+
+
+***************
+***************
+2025-07-12 02:25:57
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_01:57:14:  
+mean distance: 33.2119140625
+
+
+***************
+***************
+2025-07-12 02:56:55
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_02:28:27:  
+mean distance: 39.59331512451172
+
+
