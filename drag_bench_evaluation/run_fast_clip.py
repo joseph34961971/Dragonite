@@ -63,6 +63,7 @@ if __name__ == '__main__':
     parser.add_argument('--clip_loss_coef', type=float, default=0.7, help='clip loss coefficient')
     parser.add_argument('--fuse_coef', type=float, default=100, help='fuse coefficient')
     parser.add_argument('--projection_method', type=str, default='jacobian', help='projection method')
+    parser.add_argument('--interpolation_mode', type=str, default='interpolation', help='interpolation mode')
 
 
     args = parser.parse_args()
@@ -84,6 +85,7 @@ if __name__ == '__main__':
     root_dir = './drag_bench_data_gen'
     lora_dir = './drag_bench_lora'
     projection_method = args.projection_method
+    interpolation_mode = args.interpolation_mode
     if args.result_dir == None:
         if len(all_category) > 1:
             result_dir = f'results/fast_clip_inter_nolora_kvcopy_inverse{args.n_inference_step}' + \
@@ -93,7 +95,8 @@ if __name__ == '__main__':
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
             '_' + str(args.fuse_coef) + \
-            '_' + str(projection_method)
+            '_' + str(projection_method) + \
+            '_' + str(interpolation_mode)
         else:
             result_dir = f'results/fast_clip_inter_nolora_kvcopy_inverse{args.n_inference_step}' + \
             '_' + str(args.lora_steps) + \
@@ -103,7 +106,8 @@ if __name__ == '__main__':
             '_' + str(args.clip_loss_coef) + \
             '_' + str(args.fuse_coef) + \
             '_' + "animals" + \
-            '_' + str(projection_method)
+            '_' + str(projection_method) + \
+            '_' + str(interpolation_mode)
     else:
         result_dir = args.result_dir+ \
             '_' + str(args.lora_steps) + \
@@ -112,7 +116,8 @@ if __name__ == '__main__':
             '_' + str(args.unet_feature_idx) + \
             '_' + str(args.clip_loss_coef) + \
             '_' + str(args.fuse_coef) + \
-            '_' + str(projection_method)
+            '_' + str(projection_method) + \
+            '_' + str(interpolation_mode)
         
     result_dir += f"{time.strftime('%Y-%m-%d_%H:%M:%S',time.localtime())}"
 
@@ -163,7 +168,7 @@ if __name__ == '__main__':
                                 start_layer=10,
                                 n_inference_step=args.n_inference_step,
                                 task_cat="fast clip",
-                                fill_mode='random',    ####### For testing, rememnber to change back to interpolation
+                                fill_mode=interpolation_mode,    ####### For testing, rememnber to change back to interpolation
                                 guidance_scale = args.guidance_scale,
                                 clip_loss_coef = args.clip_loss_coef,
                                 fuse_coef = args.fuse_coef,

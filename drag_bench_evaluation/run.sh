@@ -5,7 +5,7 @@
 
 # Step 1: Run fast clip and capture eval_root
 echo "Running run_fast_clip.py..."
-eval_root=$(python run_fast_clip.py --n_inference_step 10 --guidance_scale 1.0 --clip_loss_coef 0.7 --fuse_coef 10 --projection_method Jacobian | grep "EVAL_ROOT=" | cut -d '=' -f2)
+eval_root=$(python run_fast_clip.py --n_inference_step 10 --guidance_scale 1.0 --clip_loss_coef 0.7 --fuse_coef 100 --projection_method Jacobian --interpolation_mode interpolation | grep "EVAL_ROOT=" | cut -d '=' -f2)
 echo "Captured eval_root: $eval_root"
 
 # Step 2: Run similarity evaluation with eval_root

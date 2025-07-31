@@ -698,3 +698,153 @@ use drag time sum: 1340.5840320587158
 use drag time per point: 3.8412149915722518
 
 
+***************
+***************
+2025-07-12 03:22:30
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_03:00:06:  
+use time sum: 1343.4350504875183 
+use save time sum: 12.2818603515625 
+use drag time sum: 1331.1531901359558 
+use drag time per point: 3.8141925218795296
+
+
+***************
+***************
+2025-07-12 04:19:39
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_03:57:00:  
+use time sum: 1359.079106092453 
+use save time sum: 12.189118385314941 
+use drag time sum: 1346.889987707138 
+use drag time per point: 3.8592836323986766
+
+
+***************
+***************
+2025-07-12 05:01:47
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-07-12_04:39:00:  
+use time sum: 1367.572785615921 
+use save time sum: 12.16520380973816 
+use drag time sum: 1355.4075818061829 
+use drag time per point: 3.883689346149521
+
+
+***************
+***************
+2025-07-14 01:09:08
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian_ori2025-07-14_00:46:30:  
+use time sum: 1357.810482263565 
+use save time sum: 12.24388599395752 
+use drag time sum: 1345.5665962696075 
+use drag time per point: 3.855491679855609
+
+
+***************
+***************
+2025-07-14 01:37:43
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian_02025-07-14_01:15:06:  
+use time sum: 1357.346712589264 
+use save time sum: 12.564308643341064 
+use drag time sum: 1344.7824039459229 
+use drag time per point: 3.8532447104467704
+
+
+***************
+***************
+2025-07-14 02:06:25
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian_random2025-07-14_01:44:00:  
+use time sum: 1344.4365475177765 
+use save time sum: 12.287837266921997 
+use drag time sum: 1332.1487102508545 
+use drag time per point: 3.8170450150454283
+
+
+***************
+***************
+2025-07-14 02:51:53
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian_interpolation2025-07-14_02:29:07:  
+use time sum: 1366.1372742652893 
+use save time sum: 12.245723724365234 
+use drag time sum: 1353.891550540924 
+use drag time per point: 3.879345417022705
+
+
+***************
+***************
+2025-07-14 04:28:44
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian_interpolation2025-07-14_04:05:55:  
+use time sum: 1368.8886151313782 
+use save time sum: 12.418335914611816 
+use drag time sum: 1356.4702792167664 
+use drag time per point: 3.886734324403342
+
+
+***************
+***************
+2025-07-14 15:40:39
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_1.0_10.0_Jacobian_interpolation2025-07-14_15:17:59:  
+use time sum: 1360.5559177398682 
+use save time sum: 12.209104299545288 
+use drag time sum: 1348.3468134403229 
+use drag time per point: 3.8634579181671143
+
+
+***************
+***************
+2025-07-14 16:09:26
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_10.0_10.0_Jacobian_interpolation2025-07-14_15:46:37:  
+use time sum: 1368.9779677391052 
+use save time sum: 12.206449270248413 
+use drag time sum: 1356.7715184688568 
+use drag time per point: 3.8875974741227988
+
+
+***************
+***************
+2025-07-14 16:38:15
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_100.0_10.0_Jacobian_interpolation2025-07-14_16:15:24:  
+use time sum: 1370.6742944717407 
+use save time sum: 12.352547407150269 
+use drag time sum: 1358.3217470645905 
+use drag time per point: 3.8920393898698866
+
+
+***************
+***************
+2025-07-14 17:07:08
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_500.0_10.0_Jacobian_interpolation2025-07-14_16:44:11:  
+use time sum: 1376.511027097702 
+use save time sum: 12.18793249130249 
+use drag time sum: 1364.3230946063995 
+use drag time per point: 3.909235228098566
+
+
+***************
+***************
+2025-07-14 17:35:45
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_1000.0_10.0_Jacobian_interpolation2025-07-14_17:13:05:  
+use time sum: 1360.330543756485 
+use save time sum: 12.20408582687378 
+use drag time sum: 1348.1264579296112 
+use drag time per point: 3.8628265270189432
+
+
+***************
+***************
+2025-07-14 18:04:26
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_2000.0_10.0_Jacobian_interpolation2025-07-14_17:41:43:  
+use time sum: 1362.8950991630554 
+use save time sum: 12.178710460662842 
+use drag time sum: 1350.7163887023926 
+use drag time per point: 3.870247532098546
+
+
+***************
+***************
+2025-07-19 03:02:43
+results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_Jacobian_interpolation2025-07-19_02:40:04:  
+use time sum: 1359.2118875980377 
+use save time sum: 12.238114356994629 
+use drag time sum: 1346.973773241043 
+use drag time per point: 3.859523705561728
+
+

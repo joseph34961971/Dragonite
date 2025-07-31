@@ -529,12 +529,12 @@ def run_drag(source_image,
     # inject the reference branch to guide the generation
 
     ######### For testing, rememnber to change back to MutualSelfAttentionControl
-    # editor = MutualSelfAttentionControl(start_step=start_step,
-    #                                     start_layer=start_layer,
-    #                                     total_steps=args.n_inference_step,
-    #                                     guidance_scale=args.guidance_scale)
+    editor = MutualSelfAttentionControl(start_step=start_step,
+                                        start_layer=start_layer,
+                                        total_steps=args.n_inference_step,
+                                        guidance_scale=args.guidance_scale)
 
-    editor = None
+    #editor = None
     
     # it is to do the dragdiffusion Reference-Latent-Control (rlc)
     # but it is not need in fastdrag

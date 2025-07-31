@@ -64,6 +64,52 @@ def get_rectangle(mask: torch.Tensor):
     return rect, left_top, left_bottom, right_top, right_bottom
 
 
+   
+def interpolation(x):
+    assert x.dim() == 4, "Input tensor x should have shape (1, C, N, M)"
+    batch_size, channels, N, M = x.shape 
+
+    for b in range(batch_size):
+        zero_positions = (x[b, 0] == 0)
+
+        for i in range(N):
+            for j in range(M):
+                if zero_positions[i, j]:
+                    values = []  
+                    weights = [] 
+
+                    for k in range(1, j + 1):
+                        if j - k >= 0 and x[b, 0, i, j - k] != 0:
+                            values.append(x[b, :, i, j - k])
+                            weights.append(1 / k)
+                            break
+
+                    for k in range(1, M - j):
+                        if j + k < M and x[b, 0, i, j + k] != 0:
+                            values.append(x[b, :, i, j + k])
+                            weights.append(1 / k)
+                            break
+
+                    for k in range(1, i + 1):
+                        if i - k >= 0 and x[b, 0, i - k, j] != 0:
+                            values.append(x[b, :, i - k, j])
+                            weights.append(1 / k)
+                            break
+
+                    for k in range(1, N - i):
+                        if i + k < N and x[b, 0, i + k, j] != 0:
+                            values.append(x[b, :, i + k, j])
+                            weights.append(1 / k)
+                            break
+
+                    if weights:
+                        total_weight = sum(weights)
+                        interpolated_value = sum(w * v for w, v in zip(weights, values)) / total_weight
+                        x[b, :, i, j] = interpolated_value
+
+    return x
+
+
 def interpolation_mean_adjusted(x):
     """
     Mean-adjusted interpolation using NIN (Normalization to Interpolated Norms)
@@ -538,10 +584,11 @@ def drag_stretch_with_clip_grad(model,invert_code,text_embeddings,t,handle_point
         #invert_code_d = interpolation(invert_code_d)
         print(f"invert_code_d shape: {invert_code_d.shape}")
         print(f"invert_code_d dtype: {invert_code_d.dtype}")
-        invert_code_d = interpolation_mean_adjusted(invert_code_d)
+        invert_code_d = interpolation_mean_adjusted(invert_code_d) ##### mean adjusted interpolation, remember to uncomment this
+        #invert_code_d = interpolation(invert_code_d) ##### BNNI
         print(f"invert_code_d shape: {invert_code_d.shape}")
         print(f"invert_code_d dtype: {invert_code_d.dtype}")
-        #print(f"grad_global shape: {grad_global.shape}")
+        #print(f"grad_global shape: {grad_global.shape}")s
 
         # visualize_grad_global(grad_global, invert_code_d)
 
