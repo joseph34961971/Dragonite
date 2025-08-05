@@ -61,6 +61,7 @@ if __name__ == '__main__':
         seed_everything(42)
 
         all_dist = []
+        all_dist_m = []
         for cat in all_category:
             for file_name in os.listdir(os.path.join(original_img_root, cat)):
                 if file_name == '.DS_Store':
@@ -70,6 +71,8 @@ if __name__ == '__main__':
                 # prompt = meta_data['prompt']
                 prompt = meta_data['drag_prompt']
                 points = meta_data['points']
+                mask = torch.from_numpy(meta_data['mask'])
+                mask_flat = mask.flatten()
 
                 # here, the point is in x,y coordinate
                 handle_points = []
@@ -94,20 +97,34 @@ if __name__ == '__main__':
 
                 _, H, W = source_image_tensor.shape
 
-                print(prompt)
-                ft_source = dift.forward(source_image_tensor,
-                      prompt=prompt,
-                      t=261,
-                      up_ft_index=1,    
-                      ensemble_size=8)  # return size: [1, c, h, w]
-                ft_source = F.interpolate(ft_source, (H, W), mode='bilinear')   
+                with torch.no_grad():
+                    print(prompt)
+                    ft_source = dift.forward(source_image_tensor,
+                        prompt=prompt,
+                        t=261,
+                        up_ft_index=1,    
+                        ensemble_size=8)  # return size: [1, c, h, w]
+                    ft_source = F.interpolate(ft_source, (H, W), mode='bilinear')   
 
-                ft_dragged = dift.forward(dragged_image_tensor,
-                      prompt=prompt,
-                      t=261,
-                      up_ft_index=1,
-                      ensemble_size=8)
-                ft_dragged = F.interpolate(ft_dragged, (H, W), mode='bilinear')
+                    ft_dragged = dift.forward(dragged_image_tensor,
+                        prompt=prompt,
+                        t=261,
+                        up_ft_index=1,
+                        ensemble_size=8)
+                    ft_dragged = F.interpolate(ft_dragged, (H, W), mode='bilinear')
+
+                ### m-MD
+                now_points=[]
+                cos = nn.CosineSimilarity(dim=1)
+
+                now_points_m=[]
+                x_coords = torch.arange(W)
+                y_coords = torch.arange(H)
+                x_coords = x_coords.repeat(H)
+                y_coords = y_coords.repeat_interleave(W)
+                candidate_coords = torch.stack((y_coords, x_coords), dim=1)
+                candidate_coords = candidate_coords[mask_flat==1]
+                ft_dragged_mask = ft_dragged[:,:,candidate_coords[:,0],candidate_coords[:,1]]
 
                 cos = nn.CosineSimilarity(dim=1)
                 for pt_idx in range(len(handle_points)):
@@ -119,15 +136,25 @@ if __name__ == '__main__':
                     cos_map = cos(src_vec, ft_dragged).cpu().numpy()[0]  # H, W     
                     max_rc = np.unravel_index(cos_map.argmax(), cos_map.shape) # the matched row,col    
 
+                    ### m-MD
+                    cos_map = cos(src_vec.squeeze(-1),ft_dragged_mask)[0]
+                    max_rc_m = candidate_coords[cos_map.argmax()]
+                    now_points.append((max_rc_m[0].item(),max_rc_m[1].item()))
+
                     # calculate distance
                     dist = (tp - torch.tensor(max_rc)).float().norm()      
+                    dist_m = (tp - torch.tensor(max_rc_m)).float().norm()
                     all_dist.append(dist)
+                    all_dist_m.append(dist_m)
+
                 # time.sleep(1)
                 torch.cuda.empty_cache() 
         print(target_root + ' mean distance: ', torch.tensor(all_dist).mean().item())   
+        print(' m-MD: ', torch.tensor(all_dist_m).mean().item())
         logg = f"***************\n"*2 + \
                 f"{time.strftime('%Y-%m-%d %H:%M:%S',time.localtime())}\n" +\
                 f"{target_root}:  \n" + \
-                f"mean distance: {torch.tensor(all_dist).mean().item()}\n\n\n"
+                f"mean distance: {torch.tensor(all_dist).mean().item()}\n" +\
+                f"m-MD: {torch.tensor(all_dist_m).mean().item()}\n\n\n"
         with open("./run_eval_point_marching_result.txt", 'a') as f:
             f.write(logg)

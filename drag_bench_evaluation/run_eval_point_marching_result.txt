@@ -600,3 +600,25 @@ results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_Jacobian
 mean distance: 33.48709487915039
 
 
+***************
+***************
+2025-07-31 22:44:19
+./results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_100.0_best:  
+mean distance: 34.41195297241211
+
+
+***************
+***************
+2025-07-31 22:51:57
+./results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-17_03:27:52_best:  
+mean distance: 33.030941009521484
+
+
+***************
+***************
+2025-07-31 22:59:50
+./results/fast_clip_inter_nolora_kvcopy_inverse10_80_0.7_0.01_3_0.7_10.0_Jacobian2025-06-17_03:27:52_best:  
+mean distance: 33.02901077270508
+m-MD: 29.809226989746094
+
+
