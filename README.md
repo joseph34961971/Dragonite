@@ -1,12 +1,16 @@
 <p align="center">
   <h1 align="center">Dragonite: Single-Step Drag-based Image Editing with Geometric-Semantic Guidance</h1>
   <br>
+</p>
+
+## Abstract
+Recent interactive image editing methods have made notable progress, yet achieving both precise control and real-time performance remains a challenge. Drag-based methods offer detailed geometric manipulations but suffer from low image fidelity and slow runtime performance, while text-based approaches enhance realism but limit precise and pixel-level control. To overcome these limitations, we introduce \ours{}, an intuitive and efficient framework that seamlessly unifies geometric and semantic manipulation for image editing. \ours{} leverages a Dual Guidance Module that fuses geometric deformation vectors with semantic guidance cues into a joint representation space, ensuring precise manipulation of both content and semantics. By combining a single-step latent optimization mechanism with a enhanced interpoaltion method, \ours{} achieves efficient interactive image editing while maintaining high precision through integrated geometric and semantic guidance. Extensive evaluations on the DragBench benchmark demonstrate that \ours{} effectively resolves the trade-off between speed and accuracy, enabling real-time, high-fidelity image editing.
+
+## Overview
   <div align="center">
     <img src="./release-doc/asset/Arch.png">
   </div>
   <br>
-</p>
-
 
 ## Installation
 
