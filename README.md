@@ -1,3 +1,13 @@
+<p align="center">
+  <h1 align="center">Dragonite: Single-Step Drag-based Image Editing with Geometric-Semantic Guidance</h1>
+  <br>
+  <div align="center">
+    <img src="./release-doc/asset/Arch.pdf", width="700">
+  </div>
+  <br>
+</p>
+
+
 ## Installation
 
 To install the required libraries, simply run the following command:
