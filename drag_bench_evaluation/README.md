@@ -23,8 +23,8 @@ To do this, simply execute "run_lora_training.py".
 Trained LoRAs will be saved in "drag_bench_lora"
 
 ### Step 3: run dragging results
-To run dragging results of FastDrag on images in "drag_bench_data", simply execute "run_fast_drag.py".
-Results will be saved in "drag_diffusion_res".
+To run dragging results of FastDrag on images in "drag_bench_data", simply execute "run_fast_clip.py".
+Results will be saved in ".results".
 
 ### Step 4: evaluate mean distance and similarity.
 To evaluate LPIPS score before and after dragging, execute "run_eval_similarity.py"
