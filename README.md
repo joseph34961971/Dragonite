@@ -2,7 +2,7 @@
   <h1 align="center">Dragonite: Single-Step Drag-based Image Editing with Geometric-Semantic Guidance</h1>
   <br>
   <div align="center">
-    <img src="./release-doc/asset/Arch.pdf", width="700">
+    <img src="./release-doc/asset/Arch.png", width="700">
   </div>
   <br>
 </p>
