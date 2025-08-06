@@ -30,4 +30,4 @@ python drag_ui.py
 
 
 ## Acknowledgement
-The code is built based on DragDiffusion and diffusers, thanks for their outstanding work!
+The code is built based on FastDrag and diffusers, thanks for their outstanding work!
